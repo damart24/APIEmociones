@@ -1,0 +1,10 @@
+chat de voz pregunta y respuesta por chat de voz
+
+humeai tono de voz para analizar
+integar la herramienta y que pasa con el student behaviour
+
+microfono coger las palabras pasarselas a wit y que no use el microfono directamente, sino capturadora de audio y pasar el audio a humeai y a wit.
+
+Semana 2
+Probar si en español es fiable, probar con audios y hablando, probar con el micrófono el ejemplo del discord.
+Licencia si hay de estudiante o es de pago.

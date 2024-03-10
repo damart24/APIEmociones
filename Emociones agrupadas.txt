@@ -1,0 +1,81 @@
+Felicidad:
+Admiration(Admiración)
+Amusement (Alegría)
+Contentment (Contento)
+Triumph (Triunfo)
+Determination (Determinación)
+Adoration (Adoración)
+Joy (Felicidad)
+Sympathy (Simpatía) 
+Love (Amor)
+Excitement (Excitación)
+Desire (Deseo)
+Interest (Interés)
+Satisfaction (Satisfacción)
+Romance (Romance)
+Surprise (positive)  (Sorpresa positiva)
+Concentration (Concentración)
+Ecstasy (Éxtasis)
+
+Tristeza:
+Boredom (Aburrimiento)
+Distress (Angustia)
+Disappointment (Decepción)
+Tiredness (Cansancio)
+Sadness (Tristeza)
+Disappointment (Decepción)
+Calmness (Calma)
+Nostalgia (Tristeza)
+Relief (Alivio)
+Surprise (negative) (Sorpresa negativa)
+
+Miedo:
+Anxiety (Ansiedad)
+Confusion (Confusión)
+Tiredness (Cansancio)
+Awe (Temor)
+Embarrassment (Verguenza)
+Shame (Verguenza)
+Doubt (Duda)
+Horror (Horror)
+Fear (Miedo)
+Confusion (Confusion)
+Empathic Pain (Dolor empático)
+Contemplation (Contemplación)
+
+Asco:
+Awkwardness (Torpeza)
+Disgust (Asco)
+Craving (Anhelo)
+Pride (Orgullo)
+Aesthetic Appreciation (Apreciación estética)
+
+Enfado:
+Guilt (culpable)
+Annoyance (Irritación)
+Anger (Enojo)
+Contempt (Desprecio)
+Envy (Envidia)
+Pain (Dolor)
+Craving (Antojo)
+Entrancement (Arrebato)
+
+
+                                       
+                                    
+
+                        
+                                        
+                                      
+                          
+                                   
+                                           
+                                     
+                                     
+                     
+
+                                    
+
+                                    
+
+ 
