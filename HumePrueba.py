@@ -1,3 +1,5 @@
+import base64
+import io
 import os
 import asyncio
 import pprint
@@ -35,6 +37,9 @@ def copyWavVersion():
         copyVersionInstance.writeframes(chunk)
         chunk = originalVersionInstance.readframes(chunk_size)
 
+
+    copyVersionInstance.close()
+    originalVersionInstance.close()
     # Se ejecuta el resultado final enviándolo y analizando el audio
     async def main():
         client = HumeStreamClient("LIoNt2anG1QMGhnVsNICTIIQqHwotID6hc8C7SFinTGi2ccu")
@@ -45,8 +50,38 @@ def copyWavVersion():
 
     asyncio.run(main())
 
+def sendBytesVersion():
+    # Obtener la ruta del directorio del script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
 
-copyWavVersion()
+    # Conseguimos el path junto con el nombre de donde sacaremos el WAV
+    WAVE_ORIGINAL_FILENAME = "Original.wav"
+    originalVersion_path = os.path.join(script_dir, WAVE_ORIGINAL_FILENAME)
+
+    originalVersionInstance = wave.open(originalVersion_path, 'rb')
+
+     # Leemos los bytes del archivo WAV original
+    wav_bytes = originalVersionInstance.readframes(originalVersionInstance.getnframes())
+
+    print(type(wav_bytes))
+    
+    
+    wav_bytes64 = base64.b64encode(wav_bytes) 
+
+    print(type(wav_bytes64))
+    # Cerramos el archivo WAV original
+    originalVersionInstance.close()
+    # Se ejecuta el resultado final enviándolo y analizando el audio
+    async def main():
+        client = HumeStreamClient("LIoNt2anG1QMGhnVsNICTIIQqHwotID6hc8C7SFinTGi2ccu")
+        config = ProsodyConfig()
+        async with client.connect([config]) as socket:
+            result = await socket.send_bytes(wav_bytes64)
+            pprint.pprint(result)
+
+    asyncio.run(main())
+
+sendBytesVersion()
 
 
 
