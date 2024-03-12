@@ -5,17 +5,12 @@ import wave
 
 from hume import HumeStreamClient
 from hume.models.config import ProsodyConfig
-import pyaudio
-
-testRandom()
-
-
 
 
 def testRandom():
     
-    WAVE_OUTPUT_FILENAME = "OutputHola.wav"
-    WAVE_INPUT_FILENAME = "Output.wav"
+    WAVE_OUTPUT_FILENAME = "Copia.wav"
+    WAVE_INPUT_FILENAME = "Original.wav"
     # Obtener la ruta del directorio del script
     script_dir = os.path.dirname(os.path.abspath(__file__))
     output_path = os.path.join(script_dir, WAVE_OUTPUT_FILENAME)
@@ -30,31 +25,25 @@ def testRandom():
     wf.setsampwidth(wb.getsampwidth())
     wf.setframerate(wb.getframerate())
 
-    print(wb.getframerate())
-    cositas = wb.readframes(wb.getframerate())
-    print(cositas)
-    print(type(cositas))
-        
-    wf.writeframes(b''.join(cositas))
-    wf.close()
-    wb.close()
+     # Leer y escribir en chunks
+    chunk_size = 1024  # Tamaño del chunk en frames
+    chunk = wb.readframes(chunk_size)
+    while chunk:
+        wf.writeframes(chunk)
+        chunk = wb.readframes(chunk_size)
 
-
-    wf = wave.open(output_path, 'wb')
-    #     wf.setframerate(RATE)
-    #     wf.writeframes(b''.join(frames))
 
     async def main():
         client = HumeStreamClient("LIoNt2anG1QMGhnVsNICTIIQqHwotID6hc8C7SFinTGi2ccu")
         config = ProsodyConfig()
         async with client.connect([config]) as socket:
-            result = await socket.send_file(output_path + "Hola")
+            result = await socket.send_file(output_path)
             print(result)
 
     asyncio.run(main())
 
 
-
+testRandom()
 
 
 
