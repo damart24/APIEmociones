@@ -49,6 +49,7 @@ def copyWavVersion():
             pprint.pprint(result)
 
     asyncio.run(main())
+    return "Funcionaaaaa"
 
 def sendBytesVersion():
     # Obtener la ruta del directorio del script
@@ -65,7 +66,7 @@ def sendBytesVersion():
 
     print(type(wav_bytes))
     
-    
+
     wav_bytes64 = base64.b64encode(wav_bytes) 
 
     print(type(wav_bytes64))
@@ -80,8 +81,10 @@ def sendBytesVersion():
             pprint.pprint(result)
 
     asyncio.run(main())
+    return "Funcionaaaaa"
 
-sendBytesVersion()
+
+# sendBytesVersion()
 
 
 
