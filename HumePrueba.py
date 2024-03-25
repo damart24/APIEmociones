@@ -1,5 +1,4 @@
 import base64
-import io
 import os
 import asyncio
 import pprint
@@ -26,6 +25,10 @@ def copyWavVersion():
     originalVersionInstance = wave.open(originalVersion_path, 'rb')
 
     # Copiamos las características del WAV original
+    # print(originalVersionInstance.getnchannels())
+    # print(originalVersionInstance.getsampwidth())
+    # print(originalVersionInstance.getframerate())
+
     copyVersionInstance.setnchannels(originalVersionInstance.getnchannels())
     copyVersionInstance.setsampwidth(originalVersionInstance.getsampwidth())
     copyVersionInstance.setframerate(originalVersionInstance.getframerate())
@@ -33,6 +36,7 @@ def copyWavVersion():
     # Leemos los chunks hasta que no queden más, es decir el audio entero
     chunk_size = 1024  # Tamaño del chunk en frames
     chunk = originalVersionInstance.readframes(chunk_size)
+
     while chunk:
         copyVersionInstance.writeframes(chunk)
         chunk = originalVersionInstance.readframes(chunk_size)
@@ -46,10 +50,43 @@ def copyWavVersion():
         config = ProsodyConfig()
         async with client.connect([config]) as socket:
             result = await socket.send_file(copyVersion_path)
-            pprint.pprint(result)
+            #pprint.pprint(result)
 
     asyncio.run(main())
     return "Funcionaaaaa"
+
+# Mirar si puedo saber las características del wav
+def copyWavFromBytes(bytesFromYes):
+    print("Hola ")
+    print(len(bytesFromYes))
+    # Obtener la ruta del directorio del script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Conseguimos el path junto con el nombre donde se copiará el WAV
+    WAVE_COPY_FILENAME = "CopiaBytes.wav"
+    copyVersion_path = os.path.join(script_dir, WAVE_COPY_FILENAME)
+
+    # Abrimos ambos archivos, el de copia solo de escritura, y el original solo de lectura
+    copyVersionInstance = wave.open(copyVersion_path, 'wb')
+
+    # Copiamos las características del WAV original
+    copyVersionInstance.setnchannels(2)
+    copyVersionInstance.setsampwidth(2)
+    copyVersionInstance.setframerate(48000)
+
+    copyVersionInstance.writeframes(bytesFromYes)
+
+    copyVersionInstance.close()
+    # Se ejecuta el resultado final enviándolo y analizando el audio
+    async def main():
+        client = HumeStreamClient("LIoNt2anG1QMGhnVsNICTIIQqHwotID6hc8C7SFinTGi2ccu")
+        config = ProsodyConfig()
+        async with client.connect([config]) as socket:
+            result = await socket.send_file(copyVersion_path)
+            pprint.pprint(result)
+
+    asyncio.run(main())
+    return "FuncionaaaaaVersiónCopia"
 
 def sendBytesVersion():
     # Obtener la ruta del directorio del script
@@ -81,46 +118,26 @@ def sendBytesVersion():
             pprint.pprint(result)
 
     asyncio.run(main())
-    return "Funcionaaaaa"
+    return "No funciona"
 
 
+
+
+# copyWavVersion()
+
+# Obtener la ruta del directorio del script
+# script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# # Conseguimos el path junto con el nombre de donde sacaremos el WAV
+# WAVE_ORIGINAL_FILENAME = "Original.wav"
+# originalVersion_path = os.path.join(script_dir, WAVE_ORIGINAL_FILENAME)
+
+# originalVersionInstance = wave.open(originalVersion_path, 'rb')
+
+# # Leemos los chunks hasta que no queden más, es decir el audio entero
+# chunk_size = 1024  # Tamaño del chunk en frames
+# chunk = originalVersionInstance.readframes(chunk_size)
+
+
+# copyWavFromBytes(chunk)
 # sendBytesVersion()
-
-
-
-
-
-
-
-
-# def version_final(
-#         # path
-#         ):
-#     from pprint import pprint
-#     import asyncio
-
-#     from hume import HumeStreamClient
-#     from hume.models.config import ProsodyConfig
-
-   
-
-
-#     async def main():
-       
-#         # client = HumeStreamClient("LIoNt2anG1QMGhnVsNICTIIQqHwotID6hc8C7SFinTGi2ccu")
-#         # config = ProsodyConfig()
-#         # # async with client.connect([config]) as socket:
-#         # #     result = await socket.send_file(path)
-#         # #     pprint(result)
-
-#     # asyncio.run(main())
-#     # return "Siuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
-        
-
-
-
-
-    
-
-
-   
