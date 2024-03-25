@@ -18,32 +18,12 @@ print(__name__)
 
 @app.route("/", methods=["POST"])
 def upload_wav():
-    archivo = request.files['file']
-    # Lee los primeros 12 bytes del archivo
-    header = archivo.read()
-    
-   
-    # Reinicia el cursor del archivo para que pueda leerse de nuevo desde el principio
-    archivo.seek(0)
-
-    print(len(header))
-    copyWavFromBytes(header)
-    # Verifica si los primeros cuatro bytes son 'RIFF', que es la firma de un archivo WAV
-    if header[:4] == b'RIFF':
-        return 'WAV'
-    else:
-        return 'Tipo de archivo desconocido'
-
-
-
-
     # Verificar si se envió un archivo
     if 'file' not in request.files:
         return 'No se envió ningún archivo', 400
-
+    
     file = request.files['file']
 
-    print(type(file))
     # Verificar si no se envió ningún archivo
     if file.filename == '':
         return 'Nombre de archivo vacío', 400
@@ -51,13 +31,18 @@ def upload_wav():
     # Verificar si el archivo es un archivo WAV
     if file and file.filename.endswith('.wav'):
         # Guardar el archivo en el servidor
-        file.save(file.filename)
-
-        # Realizar alguna operación con el archivo WAV, como procesamiento o almacenamiento
-
+        # file.save(file.filename)
+        # Lee los bytes del archivo
+        bytesFromWav = file.read()
+        # Reinicia el cursor del archivo para que pueda leerse de nuevo desde el principio
+        file.seek(0)
+        print(len(bytesFromWav))
+        copyWavFromBytes(bytesFromWav)
+        
         return 'Archivo WAV subido exitosamente ' + file.filename + ' ', 200
 
     return 'Tipo de archivo no soportado. Por favor, sube un archivo WAV', 400
+    
 
 @app.route("/")
 def hello_world():
