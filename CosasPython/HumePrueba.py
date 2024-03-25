@@ -1,4 +1,5 @@
 import base64
+import io
 import os
 import asyncio
 import pprint
@@ -55,10 +56,31 @@ def copyWavVersion():
     asyncio.run(main())
     return "Funcionaaaaa"
 
+# Crea un wav a partir de los bytes y devuelve nchannels, samwidth y framerate
+def obtener_caracteristicas_wav_desde_bytes(bytes_wav):
+    # Crear un objeto de archivo WAV a partir de los bytes
+    wav_file = wave.open(io.BytesIO(bytes_wav))
+
+    # Obtener características del archivo WAV
+    n_channels = wav_file.getnchannels()
+    sampwidth = wav_file.getsampwidth()
+    framerate = wav_file.getframerate()
+
+    # Cerrar el archivo WAV
+    wav_file.close()
+
+    return n_channels, sampwidth, framerate
+
 # Mirar si puedo saber las características del wav
-def copyWavFromBytes(bytesFromYes):
-    print("Hola ")
-    print(len(bytesFromYes))
+def copyWavFromBytes(bytesFromWav):
+    # Obtener características del archivo WAV desde los bytes
+    n_channels, sampwidth, framerate = obtener_caracteristicas_wav_desde_bytes(bytesFromWav)
+
+    # Imprimir las características obtenidas
+    print("Número de canales:", n_channels)
+    print("Ancho de muestra (en bytes):", sampwidth)
+    print("Frecuencia de muestreo:", framerate)
+
     # Obtener la ruta del directorio del script
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -70,11 +92,11 @@ def copyWavFromBytes(bytesFromYes):
     copyVersionInstance = wave.open(copyVersion_path, 'wb')
 
     # Copiamos las características del WAV original
-    copyVersionInstance.setnchannels(2)
-    copyVersionInstance.setsampwidth(2)
-    copyVersionInstance.setframerate(48000)
+    copyVersionInstance.setnchannels(n_channels)
+    copyVersionInstance.setsampwidth(sampwidth)
+    copyVersionInstance.setframerate(framerate)
 
-    copyVersionInstance.writeframes(bytesFromYes)
+    copyVersionInstance.writeframes(bytesFromWav)
 
     copyVersionInstance.close()
     # Se ejecuta el resultado final enviándolo y analizando el audio

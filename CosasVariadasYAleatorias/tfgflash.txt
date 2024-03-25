@@ -1,6 +1,6 @@
 https://flask.palletsprojects.com/en/3.0.x/
 
-set FLASK_APP=C:\Users\pc\Desktop\Uni\4\TFG\TFG\prueba.py
+set FLASK_APP=C:\Users\pc\Desktop\Uni\4\TFG\TFG\CosasPython\prueba.py
 flask run
 cd C:\Users\pc\AppData\Local\Programs\Python\Python39\Scripts
 
