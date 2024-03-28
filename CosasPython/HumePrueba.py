@@ -125,11 +125,24 @@ def sendBytesDirectly(bytesFromWav):
             result = await socket.send_bytes(bytesFromWav_copy)
             pprint.pprint(result)
 
-    asyncio.run(main())
     return "FuncionaaaaaVersiónCopia"
 
+async def sendBytesDirectlyAsync(bytesFromWav):
+    print(bytesFromWav[:44])
+    bytesFromWav_copy = base64.b64encode(bytesFromWav) 
+    # Se ejecuta el resultado final enviándolo y analizando el audio
+    async def main():
+        client = HumeStreamClient("LIoNt2anG1QMGhnVsNICTIIQqHwotID6hc8C7SFinTGi2ccu")
+        config = ProsodyConfig()
+        async with client.connect([config]) as socket:
+            result = await socket.send_bytes(bytesFromWav_copy)
+            pprint.pprint(result)
+            return result
 
-def sendBytesFromLoadedWav():
+    return await main()
+
+
+def sendBytesFromLoadedWav(bytesFromWav):
     # Obtener la ruta del directorio del script
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -181,4 +194,5 @@ def sendBytesFromLoadedWav():
 
 
 # copyWavFromBytes(chunk)
-# sendBytesVersion()
+# sendBytesDirectly(chunk)
+# sendBytesFromLoadedWav(chunk)

@@ -1,5 +1,0 @@
-implementar google text to speech o/y azure
-Investigar como solucionar problemas a nivel técnico, artículos científicos sobre, algoritmo y reacciones
-Cosas similares con unas entradas x(variables del alumno) convertirlo en una reacción física.
-ej 80% enfadado 20% alegre
-llamadas a chatgpt para que decidiera la salida con x variables

@@ -10,14 +10,20 @@
 # (por ejemplo, http://127.0.0.1:5000/), verás el mensaje generado por hello_world(), 
 # que incluirá el resultado de copyWavVersion().
 
+from asyncio import run
 from flask import Flask, request
-from HumePrueba import copyWavVersion, copyWavFromBytes, sendBytesDirectly
+from HumePrueba import copyWavVersion, copyWavFromBytes, sendBytesDirectly, sendBytesDirectlyAsync
+
 
 app = Flask(__name__)
 print(__name__)
 
+# Variable global para almacenar los bytes del archivo WAV
+uploaded_bytes = None
+
 @app.route("/", methods=["POST"])
 def upload_wav():
+    global uploaded_bytes
     # Verificar si se envió un archivo
     if 'file' not in request.files:
         return 'No se envió ningún archivo', 400
@@ -37,8 +43,7 @@ def upload_wav():
         # Reinicia el cursor del archivo para que pueda leerse de nuevo desde el principio
         file.seek(0)
         print(len(bytesFromWav))
-        sendBytesDirectly(bytesFromWav)
-        
+        uploaded_bytes = bytesFromWav
         return 'Archivo WAV subido exitosamente ' + file.filename + ' ', 200
 
     return 'Tipo de archivo no soportado. Por favor, sube un archivo WAV', 400
@@ -46,5 +51,14 @@ def upload_wav():
 
 @app.route("/")
 def hello_world():
-    result = copyWavVersion()
-    return f"<p>Hello, World! Result: {result}</p>"
+    global uploaded_bytes
+    
+    # Verificar si hay bytes de archivo cargados
+    if uploaded_bytes is not None:
+        print(uploaded_bytes[:44])
+        print(type(uploaded_bytes))
+        result =  run(sendBytesDirectlyAsync(uploaded_bytes))  # Utiliza los bytes del archivo cargado
+        return f"<p>Hello, World! Result: {result}</p>"
+    else:
+        return "<p>Hello, World! No se ha cargado ningún archivo WAV.</p>"
+
