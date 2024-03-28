@@ -11,8 +11,10 @@
 # que incluirá el resultado de copyWavVersion().
 
 from asyncio import run
+import asyncio
 from flask import Flask, request
 from HumePrueba import copyWavVersion, copyWavFromBytes, sendBytesDirectly, sendBytesDirectlyAsync
+from HumePrueba import algoritmoEmocionesBasicoPrueba
 
 
 app = Flask(__name__)
@@ -57,7 +59,15 @@ def hello_world():
     if uploaded_bytes is not None:
         print(uploaded_bytes[:44])
         print(type(uploaded_bytes))
-        result =  run(sendBytesDirectlyAsync(uploaded_bytes))  # Utiliza los bytes del archivo cargado
+        # Obtener el resultado de la función asíncrona
+        async def get_emotions_async():
+            return await sendBytesDirectlyAsync(uploaded_bytes)
+
+        emotions_result = asyncio.run(get_emotions_async())
+
+        # Procesar el resultado obtenido
+        result = algoritmoEmocionesBasicoPrueba(emotions_result)
+        # result =  algoritmoEmociones(run(sendBytesDirectlyAsync(uploaded_bytes)))  # Utiliza los bytes del archivo cargado
         return f"<p>Hello, World! Result: {result}</p>"
     else:
         return "<p>Hello, World! No se ha cargado ningún archivo WAV.</p>"

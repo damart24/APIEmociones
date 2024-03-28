@@ -141,7 +141,33 @@ async def sendBytesDirectlyAsync(bytesFromWav):
 
     return await main()
 
+def algoritmoEmocionesBasicoPrueba(emotionsList):
+    emotions = emotionsList['prosody']['predictions'][0]['emotions']
+    top_5_emotions = sorted(emotions, key=lambda x: x['score'], reverse=True)[:5]
 
+    for emotion in top_5_emotions:
+        print(emotion['name'], emotion['score'])
+
+    print("ESTOY ENTRANDO")
+
+    return top_5_emotions
+
+def algoritmoEmociones(emotionsList):
+    emotions = emotionsList['prosody']['predictions'][0]['emotions']
+    top_5_emotions = sorted(emotions, key=lambda x: x['score'], reverse=True)[:5]
+
+    for emotion in top_5_emotions:
+        print(emotion['name'], emotion['score'])
+
+    print("ESTOY ENTRANDO")
+
+    return top_5_emotions
+
+
+
+
+
+#ESTO NO FUNCIONA, AÚN🤑
 def sendBytesFromLoadedWav(bytesFromWav):
     # Obtener la ruta del directorio del script
     script_dir = os.path.dirname(os.path.abspath(__file__))
