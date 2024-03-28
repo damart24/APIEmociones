@@ -1,0 +1,13 @@
+52 49 46 46: Sello distintivo "RIFF", indica el comienzo de un archivo RIFF.
+xx xx xx xx: Tamaño del archivo en bytes.
+57 41 56 45: Sello distintivo "WAVE", indica que es un archivo WAV.
+
+
+
+
+66 6d 74 20: "fmt ", indica el comienzo del chunk de formato.
+10 00 00 00: Tamaño del chunk de formato (16 bytes).
+01 00: Formato de audio (PCM sin comprimir).
+02 00: Número de canales (estéreo).
+xx xx xx xx: Frecuencia de muestreo (por ejemplo, 44100 Hz).
+xx xx xx xx: Tasa de bits por segundo (por ejemplo, 176400 bps para 16 bits a 44100 Hz estéreo).
