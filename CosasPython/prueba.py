@@ -11,7 +11,7 @@
 # que incluirá el resultado de copyWavVersion().
 
 from flask import Flask, request
-from HumePrueba import copyWavVersion, copyWavFromBytes
+from HumePrueba import copyWavVersion, copyWavFromBytes, sendBytesDirectly
 
 app = Flask(__name__)
 print(__name__)
@@ -37,7 +37,7 @@ def upload_wav():
         # Reinicia el cursor del archivo para que pueda leerse de nuevo desde el principio
         file.seek(0)
         print(len(bytesFromWav))
-        copyWavFromBytes(bytesFromWav)
+        sendBytesDirectly(bytesFromWav)
         
         return 'Archivo WAV subido exitosamente ' + file.filename + ' ', 200
 

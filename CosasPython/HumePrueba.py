@@ -73,6 +73,7 @@ def obtener_caracteristicas_wav_desde_bytes(bytes_wav):
 
 # Mirar si puedo saber las características del wav
 def copyWavFromBytes(bytesFromWav):
+    print(bytesFromWav[:44])
     # Obtener características del archivo WAV desde los bytes
     n_channels, sampwidth, framerate = obtener_caracteristicas_wav_desde_bytes(bytesFromWav)
 
@@ -99,18 +100,36 @@ def copyWavFromBytes(bytesFromWav):
     copyVersionInstance.writeframes(bytesFromWav)
 
     copyVersionInstance.close()
+
+    bytesFromWav_copy = base64.b64encode(bytesFromWav) 
     # Se ejecuta el resultado final enviándolo y analizando el audio
     async def main():
         client = HumeStreamClient("LIoNt2anG1QMGhnVsNICTIIQqHwotID6hc8C7SFinTGi2ccu")
         config = ProsodyConfig()
         async with client.connect([config]) as socket:
-            result = await socket.send_file(copyVersion_path)
+            result = await socket.send_bytes(bytesFromWav_copy)
             pprint.pprint(result)
 
     asyncio.run(main())
     return "FuncionaaaaaVersiónCopia"
 
-def sendBytesVersion():
+
+def sendBytesDirectly(bytesFromWav):
+    print(bytesFromWav[:44])
+    bytesFromWav_copy = base64.b64encode(bytesFromWav) 
+    # Se ejecuta el resultado final enviándolo y analizando el audio
+    async def main():
+        client = HumeStreamClient("LIoNt2anG1QMGhnVsNICTIIQqHwotID6hc8C7SFinTGi2ccu")
+        config = ProsodyConfig()
+        async with client.connect([config]) as socket:
+            result = await socket.send_bytes(bytesFromWav_copy)
+            pprint.pprint(result)
+
+    asyncio.run(main())
+    return "FuncionaaaaaVersiónCopia"
+
+
+def sendBytesFromLoadedWav():
     # Obtener la ruta del directorio del script
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -154,11 +173,11 @@ def sendBytesVersion():
 # WAVE_ORIGINAL_FILENAME = "Original.wav"
 # originalVersion_path = os.path.join(script_dir, WAVE_ORIGINAL_FILENAME)
 
+
+
 # originalVersionInstance = wave.open(originalVersion_path, 'rb')
 
-# # Leemos los chunks hasta que no queden más, es decir el audio entero
-# chunk_size = 1024  # Tamaño del chunk en frames
-# chunk = originalVersionInstance.readframes(chunk_size)
+# chunk = originalVersionInstance.readframes(44)
 
 
 # copyWavFromBytes(chunk)
