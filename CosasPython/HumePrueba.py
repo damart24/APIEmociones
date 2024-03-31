@@ -113,7 +113,6 @@ def copyWavFromBytes(bytesFromWav):
     asyncio.run(main())
     return "FuncionaaaaaVersiónCopia"
 
-
 def sendBytesDirectly(bytesFromWav):
     print(bytesFromWav[:44])
     bytesFromWav_copy = base64.b64encode(bytesFromWav) 

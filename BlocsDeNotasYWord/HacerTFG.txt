@@ -1,9 +1,14 @@
 
-Hacer algoritmo de emociones y coger variables del audio, solo he encontrado por ahora la amplitud
+Hacer algoritmo de emociones y coger variables del audio, solo he encontrado por ahora la amplitud, volumen, pitch
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
+
 Intentar enviar directamente de un wav cargado de una carpeta los bytes, convirtiendolo y leyendolo desde python(no funciona no se por que,
 o sea debería tener RIFF xxxx WAVE pero no lo está leyendo bien, con eso y  bytesFromWav_copy = base64.b64encode(bytesFromWav) funciona enviarlo a HUMEAI
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Dividir audio, chopearlo en diferentes audios si es muy largo
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
 
