@@ -14,7 +14,7 @@ from asyncio import run
 import asyncio
 from flask import Flask, request
 from HumePrueba import copyWavVersion, copyWavFromBytes, sendBytesDirectly, sendBytesDirectlyAsync
-from HumePrueba import algoritmoEmocionesBasicoPrueba
+from HumePrueba import algoritmoEmocionesBasicoPrueba, algoritmoEmociones
 
 
 app = Flask(__name__)
@@ -66,7 +66,7 @@ def hello_world():
         emotions_result = asyncio.run(get_emotions_async())
 
         # Procesar el resultado obtenido
-        result = algoritmoEmocionesBasicoPrueba(emotions_result)
+        result = algoritmoEmociones(emotions_result)
         # result =  algoritmoEmociones(run(sendBytesDirectlyAsync(uploaded_bytes)))  # Utiliza los bytes del archivo cargado
         return f"<p>Hello, World! Result: {result}</p>"
     else:

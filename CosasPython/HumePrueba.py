@@ -151,7 +151,49 @@ def algoritmoEmocionesBasicoPrueba(emotionsList):
 
     return top_5_emotions
 
+
+# Función para ordenar las emociones en cada categoría
+def sort_emotions_by_category(emotions_by_category, emotions_dict):
+    emotions_list = emotions_dict['prosody']['predictions'][0]['emotions']
+    summed_emotions = {category: 0 for category in emotions_by_category}  # Inicializar un diccionario para almacenar la suma de puntuaciones por categoría
+    
+    for emotion in emotions_list:
+        for category, category_emotions in emotions_by_category.items():
+            if any(substring in emotion['name'] for substring in category_emotions):
+                summed_emotions[category] += emotion['score']
+    
+    return summed_emotions
+
+
 def algoritmoEmociones(emotionsList):
+    # Definir el diccionario de emociones por categoría
+    emotions_by_category = {
+        'Felicidad': ['Admiration', 'Amusement', 'Contentment', 'Triumph', 'Determination',
+                    'Adoration', 'Joy', 'Sympathy', 'Love', 'Excitement', 'Desire',
+                    'Interest', 'Satisfaction', 'Romance', 'Surprise (positive)',
+                    'Concentration', 'Ecstasy'],
+        'Tristeza': ['Boredom', 'Distress', 'Disappointment', 'Tiredness', 'Sadness',
+                     'Calmness', 'Nostalgia', 'Relief', 'Surprise (negative)'],
+        'Miedo': ['Anxiety', 'Confusion', 'Tiredness', 'Awe', 'Embarrassment', 'Shame',
+                'Doubt', 'Horror', 'Fear', 'Confusion', 'Empathic Pain', 'Contemplation'],
+        'Asco': ['Awkwardness', 'Disgust', 'Craving', 'Pride', 'Aesthetic Appreciation'],
+        'Enfado': ['Guilt', 'Annoyance', 'Anger', 'Contempt', 'Envy', 'Pain', 'Craving', 'Entrancement']
+    }
+
+    # Ordenar las emociones por categoría
+    sorted_emotions_by_category = sort_emotions_by_category(emotions_by_category, emotionsList)
+
+    # # Imprimir las 5 emociones principales de cada categoría
+    # for category, emotions in sorted_emotions_by_category.items():
+    #     print(f'{category}:')
+    #     for emotion in emotions:
+    #         print(f'{emotion["name"]} ({emotion["score"]})')
+    #     print()
+
+    return sorted_emotions_by_category
+
+
+
     emotions = emotionsList['prosody']['predictions'][0]['emotions']
     top_5_emotions = sorted(emotions, key=lambda x: x['score'], reverse=True)[:5]
 
