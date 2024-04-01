@@ -13,8 +13,8 @@
 from asyncio import run
 import asyncio
 from flask import Flask, request
-from HumePrueba import copyWavVersion, copyWavFromBytes, sendBytesDirectly, sendBytesDirectlyAsync
-from HumePrueba import algoritmoEmocionesBasicoPrueba, algoritmoEmociones
+from HumePrueba import sendBytesDirectlyAsync
+from HumePrueba import algoritmoEmociones
 
 
 app = Flask(__name__)
@@ -50,7 +50,6 @@ def upload_wav():
 
     return 'Tipo de archivo no soportado. Por favor, sube un archivo WAV', 400
     
-
 @app.route("/")
 def hello_world():
     global uploaded_bytes

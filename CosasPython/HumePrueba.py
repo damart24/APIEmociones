@@ -113,6 +113,91 @@ def copyWavFromBytes(bytesFromWav):
     asyncio.run(main())
     return "FuncionaaaaaVersiónCopia"
 
+#Algoritmo de prueba donde cojo las 5 emociones mas predominantes
+def algoritmoEmocionesBasicoPrueba(emotionsList):
+    emotions = emotionsList['prosody']['predictions'][0]['emotions']
+    top_5_emotions = sorted(emotions, key=lambda x: x['score'], reverse=True)[:5]
+
+    for emotion in top_5_emotions:
+        print(emotion['name'], emotion['score'])
+
+    print("ESTOY ENTRANDO")
+
+    return top_5_emotions
+
+# Función para ordenar las emociones en cada categoría
+def sort_emotions_by_category(emotions_by_category, emotions_dict):
+    emotions_list = emotions_dict['prosody']['predictions'][0]['emotions']
+    
+    # Inicializar un diccionario para almacenar la suma de puntuaciones por categoría
+    summed_emotions = {category: 0 for category in emotions_by_category}  
+    
+    for emotion in emotions_list:
+        for category, category_emotions in emotions_by_category.items():
+            if any(substring in emotion['name'] for substring in category_emotions):
+                summed_emotions[category] += emotion['score']
+    
+    return summed_emotions
+
+#Algoritmo donde se ordenan las emociones en 5 categorias
+def algoritmoEmociones(emotionsList):
+    # Definir el diccionario de emociones por categoría
+    emotions_by_category = {
+        'Felicidad': ['Admiration', 'Amusement', 'Contentment', 'Triumph', 'Determination',
+                    'Adoration', 'Joy', 'Sympathy', 'Love', 'Excitement', 'Desire',
+                    'Interest', 'Satisfaction', 'Romance', 'Surprise (positive)',
+                    'Concentration', 'Ecstasy'],
+        'Tristeza': ['Boredom', 'Distress', 'Disappointment', 'Tiredness', 'Sadness',
+                     'Calmness', 'Nostalgia', 'Relief', 'Surprise (negative)'],
+        'Miedo': ['Anxiety', 'Confusion', 'Tiredness', 'Awe', 'Embarrassment', 'Shame',
+                'Doubt', 'Horror', 'Fear', 'Confusion', 'Empathic Pain', 'Contemplation'],
+        'Asco': ['Awkwardness', 'Disgust', 'Craving', 'Pride', 'Aesthetic Appreciation'],
+        'Enfado': ['Guilt', 'Annoyance', 'Anger', 'Contempt', 'Envy', 'Pain', 'Craving', 'Entrancement']
+    }
+
+    # Ordenar las emociones por categoría
+    sorted_emotions_by_category = sort_emotions_by_category(emotions_by_category, emotionsList)
+
+    return sorted_emotions_by_category
+
+#Obtengo los bytes de un wav a partir de su nombre, en la ubicación 
+# en la que está el archivo de python, además lo devuelve en formato 64 bytes
+def getBytes64FromWav(wavName):
+    # Obtener la ruta del directorio del script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Conseguimos el path junto con el nombre de donde sacaremos el WAV
+    WAVE_ORIGINAL_FILENAME = wavName
+    originalVersion_path = os.path.join(script_dir, WAVE_ORIGINAL_FILENAME)
+
+    # Leemos los bytes del archivo WAV original
+    # Abrir el archivo WAV en modo binario
+    with open(originalVersion_path, 'rb') as f:
+        # Leer todos los bytes del archivo
+        wav_bytes = f.read()
+    
+    print(wav_bytes[:44])
+    print(type(wav_bytes))
+
+    wav_bytes64 = base64.b64encode(wav_bytes) 
+
+    return wav_bytes64
+
+#Funciona
+def sendBytesFromLoadedWav(wavName):
+    wav_bytes64 = getBytes64FromWav(wavName)
+    # Se ejecuta el resultado final enviándolo y analizando el audio
+    async def main():
+        client = HumeStreamClient("LIoNt2anG1QMGhnVsNICTIIQqHwotID6hc8C7SFinTGi2ccu")
+        config = ProsodyConfig()
+        async with client.connect([config]) as socket:
+            result = await socket.send_bytes(wav_bytes64)
+            pprint.pprint(result)
+
+    asyncio.run(main())
+    return "Funcionaaa"
+
+#Mirar porque son lo mismo
 def sendBytesDirectly(bytesFromWav):
     print(bytesFromWav[:44])
     bytesFromWav_copy = base64.b64encode(bytesFromWav) 
@@ -140,110 +225,7 @@ async def sendBytesDirectlyAsync(bytesFromWav):
 
     return await main()
 
-def algoritmoEmocionesBasicoPrueba(emotionsList):
-    emotions = emotionsList['prosody']['predictions'][0]['emotions']
-    top_5_emotions = sorted(emotions, key=lambda x: x['score'], reverse=True)[:5]
-
-    for emotion in top_5_emotions:
-        print(emotion['name'], emotion['score'])
-
-    print("ESTOY ENTRANDO")
-
-    return top_5_emotions
-
-
-# Función para ordenar las emociones en cada categoría
-def sort_emotions_by_category(emotions_by_category, emotions_dict):
-    emotions_list = emotions_dict['prosody']['predictions'][0]['emotions']
-    summed_emotions = {category: 0 for category in emotions_by_category}  # Inicializar un diccionario para almacenar la suma de puntuaciones por categoría
-    
-    for emotion in emotions_list:
-        for category, category_emotions in emotions_by_category.items():
-            if any(substring in emotion['name'] for substring in category_emotions):
-                summed_emotions[category] += emotion['score']
-    
-    return summed_emotions
-
-
-def algoritmoEmociones(emotionsList):
-    # Definir el diccionario de emociones por categoría
-    emotions_by_category = {
-        'Felicidad': ['Admiration', 'Amusement', 'Contentment', 'Triumph', 'Determination',
-                    'Adoration', 'Joy', 'Sympathy', 'Love', 'Excitement', 'Desire',
-                    'Interest', 'Satisfaction', 'Romance', 'Surprise (positive)',
-                    'Concentration', 'Ecstasy'],
-        'Tristeza': ['Boredom', 'Distress', 'Disappointment', 'Tiredness', 'Sadness',
-                     'Calmness', 'Nostalgia', 'Relief', 'Surprise (negative)'],
-        'Miedo': ['Anxiety', 'Confusion', 'Tiredness', 'Awe', 'Embarrassment', 'Shame',
-                'Doubt', 'Horror', 'Fear', 'Confusion', 'Empathic Pain', 'Contemplation'],
-        'Asco': ['Awkwardness', 'Disgust', 'Craving', 'Pride', 'Aesthetic Appreciation'],
-        'Enfado': ['Guilt', 'Annoyance', 'Anger', 'Contempt', 'Envy', 'Pain', 'Craving', 'Entrancement']
-    }
-
-    # Ordenar las emociones por categoría
-    sorted_emotions_by_category = sort_emotions_by_category(emotions_by_category, emotionsList)
-
-    # # Imprimir las 5 emociones principales de cada categoría
-    # for category, emotions in sorted_emotions_by_category.items():
-    #     print(f'{category}:')
-    #     for emotion in emotions:
-    #         print(f'{emotion["name"]} ({emotion["score"]})')
-    #     print()
-
-    return sorted_emotions_by_category
-
-
-
-    emotions = emotionsList['prosody']['predictions'][0]['emotions']
-    top_5_emotions = sorted(emotions, key=lambda x: x['score'], reverse=True)[:5]
-
-    for emotion in top_5_emotions:
-        print(emotion['name'], emotion['score'])
-
-    print("ESTOY ENTRANDO")
-
-    return top_5_emotions
-
-
-
-
-
-#ESTO NO FUNCIONA, AÚN🤑
-def sendBytesFromLoadedWav(bytesFromWav):
-    # Obtener la ruta del directorio del script
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-
-    # Conseguimos el path junto con el nombre de donde sacaremos el WAV
-    WAVE_ORIGINAL_FILENAME = "Original.wav"
-    originalVersion_path = os.path.join(script_dir, WAVE_ORIGINAL_FILENAME)
-
-    originalVersionInstance = wave.open(originalVersion_path, 'rb')
-
-     # Leemos los bytes del archivo WAV original
-    wav_bytes = originalVersionInstance.readframes(originalVersionInstance.getnframes())
-
-    print(type(wav_bytes))
-    
-
-    wav_bytes64 = base64.b64encode(wav_bytes) 
-
-    print(type(wav_bytes64))
-    # Cerramos el archivo WAV original
-    originalVersionInstance.close()
-    # Se ejecuta el resultado final enviándolo y analizando el audio
-    async def main():
-        client = HumeStreamClient("LIoNt2anG1QMGhnVsNICTIIQqHwotID6hc8C7SFinTGi2ccu")
-        config = ProsodyConfig()
-        async with client.connect([config]) as socket:
-            result = await socket.send_bytes(wav_bytes64)
-            pprint.pprint(result)
-
-    asyncio.run(main())
-    return "No funciona"
-
-
-
-
+from scipy.io import wavfile
 # copyWavVersion()
 
 # Obtener la ruta del directorio del script
@@ -262,4 +244,4 @@ def sendBytesFromLoadedWav(bytesFromWav):
 
 # copyWavFromBytes(chunk)
 # sendBytesDirectly(chunk)
-# sendBytesFromLoadedWav(chunk)
+sendBytesFromLoadedWav("Original.wav")

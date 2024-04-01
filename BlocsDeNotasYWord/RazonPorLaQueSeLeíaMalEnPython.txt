@@ -1,0 +1,4 @@
+Entiendo, si estás teniendo problemas con la función readframes de la biblioteca wave y estás viendo que los bytes leídos no incluyen la información del encabezado RIFF ni la etiqueta WAVE, podría deberse a que la función readframes está leyendo solo los datos de audio sin incluir los metadatos del archivo WAV.
+
+La función readframes de la biblioteca wave se utiliza para leer los datos de audio del archivo WAV, pero no incluye los encabezados ni metadatos. Para obtener todos los bytes del archivo, incluidos los encabezados y metadatos, es mejor utilizar la función read o readframes en conjunto con el tamaño del encabezado (normalmente 44 bytes para un archivo WAV típico) para asegurarte de que se lean todos los bytes.
+
