@@ -4,10 +4,11 @@ import os
 import asyncio
 import pprint
 import wave
+import numpy as np
 
 from hume import HumeStreamClient
 from hume.models.config import ProsodyConfig
-
+from scipy.io import wavfile
 
 def copyWavVersion():
     # Obtener la ruta del directorio del script
@@ -138,6 +139,45 @@ def sort_emotions_by_category(emotions_by_category, emotions_dict):
                 summed_emotions[category] += emotion['score']
     
     return summed_emotions
+    
+# import aubio
+# def get_pitch(filename):
+#     # Abre el archivo de audio
+#     samplerate, data = aubio.source(filename)
+    
+#     # Crea el objeto de tono (pitch) de aubio
+#     pitch_o = aubio.pitch("yin", samplerate)
+#     pitch_o.set_unit("Hz")  # Configura la unidad de medida del tono en Hz
+    
+#     pitches = []  # Lista para almacenar los tonos detectados
+    
+#     # Procesa el audio
+#     total_frames = 0
+#     while True:
+#         samples, read = data()
+#         pitch = pitch_o(samples)[0]
+#         confidence = pitch_o.get_confidence()
+#         if confidence > 0.5:  # Considera solo tonos detectados con alta confianza
+#             pitches.append(pitch)
+#         total_frames += read
+#         if read < hop_size:
+#             break
+    
+#     return pitches
+
+def get_wav_amplitudes(file_path):
+    with wave.open(file_path, 'rb') as wav_file:
+        # Read all audio frames as byte data
+        audio_data = wav_file.readframes(wav_file.getnframes())
+        # Convert byte data to a numpy array
+        audio_array = np.frombuffer(audio_data, dtype=np.int16)
+        # Normalize the audio data to range [-1, 1]
+        normalized_audio = audio_array / np.iinfo(audio_array.dtype).max
+        # Calculate the average amplitude
+        average_amplitude = np.mean(np.abs(normalized_audio))
+    return average_amplitude
+
+
 
 #Algoritmo donde se ordenan las emociones en 5 categorias
 def algoritmoEmociones(emotionsList):
@@ -225,7 +265,7 @@ async def sendBytesDirectlyAsync(bytesFromWav):
 
     return await main()
 
-from scipy.io import wavfile
+
 # copyWavVersion()
 
 # Obtener la ruta del directorio del script
@@ -244,4 +284,30 @@ from scipy.io import wavfile
 
 # copyWavFromBytes(chunk)
 # sendBytesDirectly(chunk)
-sendBytesFromLoadedWav("Original.wav")
+# sendBytesFromLoadedWav("Original.wav")
+# # Ejemplo de uso:
+# Example usage
+# Obtener la ruta del directorio del script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Conseguimos el path junto con el nombre de donde sacaremos el WAV
+file_path = "Original.wav"
+WAVE_ORIGINAL_FILENAME = file_path
+originalVersion_path = os.path.join(script_dir, WAVE_ORIGINAL_FILENAME)
+amplitudes = get_wav_amplitudes(originalVersion_path)
+print("Amplitudes:", amplitudes)
+# filename = 'ejemplo.wav'
+# pitches = get_pitch(filename)
+# print("Tonos:", pitches)
+
+def obtener_longitud_de_onda(file_path):
+    with wave.open(file_path, 'rb') as wav_file:
+        framerate = wav_file.getframerate()
+        duration = wav_file.getnframes() / framerate
+        wavelength = 1 / framerate
+    return wavelength
+
+# Uso de ejemplo
+file_path = 'ejemplo.wav'
+longitud_de_onda = obtener_longitud_de_onda(originalVersion_path)
+print("Longitud de onda:", longitud_de_onda, "segundos")

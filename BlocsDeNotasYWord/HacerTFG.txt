@@ -1,5 +1,5 @@
 
-Hacer algoritmo de emociones y coger variables del audio, solo he encontrado por ahora la amplitud, frequency, volumen, pitch, wavelength (Volumen y amplitud es lo mismo)
+Hacer algoritmo de emociones y coger variables del audio, solo he encontrado por ahora la amplitud, volumen, frequency, pitch, wavelength (Volumen y amplitud es lo mismo)
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
 
