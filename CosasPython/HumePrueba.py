@@ -8,7 +8,9 @@ import numpy as np
 
 from hume import HumeStreamClient
 from hume.models.config import ProsodyConfig
-from scipy.io import wavfile
+import numpy as np
+import scipy.io.wavfile as wav
+from scipy.signal import find_peaks
 
 def copyWavVersion():
     # Obtener la ruta del directorio del script
@@ -58,25 +60,26 @@ def copyWavVersion():
     return "Funcionaaaaa"
 
 # Crea un wav a partir de los bytes y devuelve nchannels, samwidth y framerate
-def obtener_caracteristicas_wav_desde_bytes(bytes_wav):
+def obtener_caracteristicas_wav_desde_bytes(bytes_wav2):
     # Crear un objeto de archivo WAV a partir de los bytes
-    wav_file = wave.open(io.BytesIO(bytes_wav))
+    wav_file = wave.open(io.BytesIO(bytes_wav2))
 
     # Obtener características del archivo WAV
     n_channels = wav_file.getnchannels()
-    sampwidth = wav_file.getsampwidth()
-    framerate = wav_file.getframerate()
+    sampWidth = wav_file.getsampwidth()
+    frameRate = wav_file.getframerate()
+    numFrames = wav_file.getnframes()
 
     # Cerrar el archivo WAV
     wav_file.close()
 
-    return n_channels, sampwidth, framerate
+    return n_channels, sampWidth, frameRate, numFrames
 
 # Mirar si puedo saber las características del wav
 def copyWavFromBytes(bytesFromWav):
     print(bytesFromWav[:44])
     # Obtener características del archivo WAV desde los bytes
-    n_channels, sampwidth, framerate = obtener_caracteristicas_wav_desde_bytes(bytesFromWav)
+    n_channels, sampwidth, framerate, _ = obtener_caracteristicas_wav_desde_bytes(bytesFromWav)
 
     # Imprimir las características obtenidas
     print("Número de canales:", n_channels)
@@ -139,45 +142,6 @@ def sort_emotions_by_category(emotions_by_category, emotions_dict):
                 summed_emotions[category] += emotion['score']
     
     return summed_emotions
-    
-# import aubio
-# def get_pitch(filename):
-#     # Abre el archivo de audio
-#     samplerate, data = aubio.source(filename)
-    
-#     # Crea el objeto de tono (pitch) de aubio
-#     pitch_o = aubio.pitch("yin", samplerate)
-#     pitch_o.set_unit("Hz")  # Configura la unidad de medida del tono en Hz
-    
-#     pitches = []  # Lista para almacenar los tonos detectados
-    
-#     # Procesa el audio
-#     total_frames = 0
-#     while True:
-#         samples, read = data()
-#         pitch = pitch_o(samples)[0]
-#         confidence = pitch_o.get_confidence()
-#         if confidence > 0.5:  # Considera solo tonos detectados con alta confianza
-#             pitches.append(pitch)
-#         total_frames += read
-#         if read < hop_size:
-#             break
-    
-#     return pitches
-
-def get_wav_amplitudes(file_path):
-    with wave.open(file_path, 'rb') as wav_file:
-        # Read all audio frames as byte data
-        audio_data = wav_file.readframes(wav_file.getnframes())
-        # Convert byte data to a numpy array
-        audio_array = np.frombuffer(audio_data, dtype=np.int16)
-        # Normalize the audio data to range [-1, 1]
-        normalized_audio = audio_array / np.iinfo(audio_array.dtype).max
-        # Calculate the average amplitude
-        average_amplitude = np.mean(np.abs(normalized_audio))
-    return average_amplitude
-
-
 
 #Algoritmo donde se ordenan las emociones en 5 categorias
 def algoritmoEmociones(emotionsList):
@@ -202,7 +166,7 @@ def algoritmoEmociones(emotionsList):
 
 #Obtengo los bytes de un wav a partir de su nombre, en la ubicación 
 # en la que está el archivo de python, además lo devuelve en formato 64 bytes
-def getBytes64FromWav(wavName):
+def getBytesFromWav(wavName):
     # Obtener la ruta del directorio del script
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -219,13 +183,17 @@ def getBytes64FromWav(wavName):
     print(wav_bytes[:44])
     print(type(wav_bytes))
 
-    wav_bytes64 = base64.b64encode(wav_bytes) 
 
+    return wav_bytes
+
+def convertBytesto64(wav_bytes):
+    wav_bytes64 = base64.b64encode(wav_bytes) 
     return wav_bytes64
 
 #Funciona
 def sendBytesFromLoadedWav(wavName):
-    wav_bytes64 = getBytes64FromWav(wavName)
+    wav_bytes = getBytesFromWav(wavName)
+    wav_bytes64 = convertBytesto64(wav_bytes)
     # Se ejecuta el resultado final enviándolo y analizando el audio
     async def main():
         client = HumeStreamClient("LIoNt2anG1QMGhnVsNICTIIQqHwotID6hc8C7SFinTGi2ccu")
@@ -265,49 +233,107 @@ async def sendBytesDirectlyAsync(bytesFromWav):
 
     return await main()
 
+def obtener_longitud_de_onda(file_path):
+    velocidad_del_sonido = 343
+    with wave.open(file_path, 'rb') as wav_file:
+        framerate = wav_file.getframerate()
+        periodo = 1 / framerate
+        frecuencia = 1 / periodo
+        longitud_de_onda = velocidad_del_sonido / frecuencia
+    return longitud_de_onda
+
+def get_wav_amplitudes(file_path):
+    with wave.open(file_path, 'rb') as wav_file:
+        # Read all audio frames as byte data
+        audio_data = wav_file.readframes(wav_file.getnframes())
+        # Convert byte data to a numpy array
+        audio_array = np.frombuffer(audio_data, dtype=np.int16)
+        # Normalize the audio data to range [-1, 1]
+        normalized_audio = audio_array / np.iinfo(audio_array.dtype).max
+        # Calculate the average amplitude
+        average_amplitude = np.mean(np.abs(normalized_audio))
+    return average_amplitude
+
+def get_pitch(filename):
+    # Leer el archivo WAV
+    samplerate, data = wav.read(filename)
+    
+    # Convertir a mono si es estéreo
+    if len(data.shape) > 1:
+        data = data.mean(axis=1)
+    
+    # Calcular la Transformada de Fourier
+    fft_data = np.fft.fft(data)
+    
+    # Obtener las frecuencias correspondientes a la FFT
+    freqs = np.fft.fftfreq(len(data), 1/samplerate)
+    
+    # Encontrar los picos en los datos de la FFT
+    peaks, _ = find_peaks(np.abs(fft_data))
+    
+    # Extraer las frecuencias positivas
+    pos_freqs = freqs[peaks]
+    
+    # Calcular el tono (asumiendo que el primer pico corresponde a la frecuencia fundamental)
+    pitch = abs(pos_freqs[0])
+    
+    return pitch
+
+def dividir_audio(bytesFromWav):
+    segmentos = []
+
+    _, _, framerate, num_frames = obtener_caracteristicas_wav_desde_bytes(bytesFromWav)
+    
+    duration = num_frames / framerate  # Duración total del audio en segundos
+        
+    # Calcular el número de segmentos
+    num_segmentos = int(duration / 5) + 1
+    
+    # Dividir el audio en segmentos de máximo 5 segundos
+    inicio_frame = 0
+    for i in range(num_segmentos):
+        fin_frame = min(inicio_frame + 5 * framerate, len(bytesFromWav))
+        segmento = bytesFromWav[inicio_frame:fin_frame]
+        segmentos.append(segmento)
+        inicio_frame = fin_frame
+    
+    return segmentos
+
+# def guardar_segmentos(segmentos, output_folder):
+#     if not os.path.exists(output_folder):
+#         os.makedirs(output_folder)
+    
+#     for i, segmento in enumerate(segmentos):
+#         output_file = os.path.join(output_folder, f'segmento_{i+1}.wav')
+#         with wave.open(output_file, 'wb') as wav_file:
+#             wav_file.setnchannels(1)  # Mono
+#             wav_file.setsampwidth(2)   # 16 bits por muestra
+#             wav_file.setframerate(44100)  # Frecuencia de muestreo (puedes cambiarla según tus necesidades)
+#             wav_file.writeframes(segmento)
+
+
+
+
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+file_path = "Original.wav"
+originalVersion_path = os.path.join(script_dir, file_path)
+bytesToSend =  getBytesFromWav(originalVersion_path)
 
 # copyWavVersion()
 
 # Obtener la ruta del directorio del script
-# script_dir = os.path.dirname(os.path.abspath(__file__))
 
-# # Conseguimos el path junto con el nombre de donde sacaremos el WAV
-# WAVE_ORIGINAL_FILENAME = "Original.wav"
-# originalVersion_path = os.path.join(script_dir, WAVE_ORIGINAL_FILENAME)
+# copyWavFromBytes(bytesToSend)
+# sendBytesDirectly(bytesToSend)
+sendBytesFromLoadedWav("Original.wav")
+# amplitudes = get_wav_amplitudes(originalVersion_path)
+# print("Amplitudes:", amplitudes)
+# longitud_de_onda = obtener_longitud_de_onda(originalVersion_path)
+# print("Longitud de onda:", longitud_de_onda, "segundos")
+# pitch = get_pitch(originalVersion_path)
+# print("Tono:", pitch)
 
 
-
-# originalVersionInstance = wave.open(originalVersion_path, 'rb')
-
-# chunk = originalVersionInstance.readframes(44)
-
-
-# copyWavFromBytes(chunk)
-# sendBytesDirectly(chunk)
-# sendBytesFromLoadedWav("Original.wav")
-# # Ejemplo de uso:
-# Example usage
-# Obtener la ruta del directorio del script
-script_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Conseguimos el path junto con el nombre de donde sacaremos el WAV
-file_path = "Original.wav"
-WAVE_ORIGINAL_FILENAME = file_path
-originalVersion_path = os.path.join(script_dir, WAVE_ORIGINAL_FILENAME)
-amplitudes = get_wav_amplitudes(originalVersion_path)
-print("Amplitudes:", amplitudes)
-# filename = 'ejemplo.wav'
-# pitches = get_pitch(filename)
-# print("Tonos:", pitches)
-
-def obtener_longitud_de_onda(file_path):
-    with wave.open(file_path, 'rb') as wav_file:
-        framerate = wav_file.getframerate()
-        duration = wav_file.getnframes() / framerate
-        wavelength = 1 / framerate
-    return wavelength
-
-# Uso de ejemplo
-file_path = 'ejemplo.wav'
-longitud_de_onda = obtener_longitud_de_onda(originalVersion_path)
-print("Longitud de onda:", longitud_de_onda, "segundos")
+segmentos = dividir_audio(bytesToSend)
+# guardar_segmentos(segmentos, output_folder)
