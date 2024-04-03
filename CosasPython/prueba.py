@@ -66,7 +66,6 @@ def hello_world():
 
         # Procesar el resultado obtenido
         result = algoritmoEmociones(emotions_result)
-        # result =  algoritmoEmociones(run(sendBytesDirectlyAsync(uploaded_bytes)))  # Utiliza los bytes del archivo cargado
         return f"<p>Hello, World! Result: {result}</p>"
     else:
         return "<p>Hello, World! No se ha cargado ningún archivo WAV.</p>"

@@ -78,7 +78,7 @@ def obtener_caracteristicas_wav_desde_bytes(bytes_wav):
 
 # Copia un wav desde unos bytes dado, y envía dicho wav a HumeAI, como la versión anterior pero 
 # desde los bytes en crudo en vez del wav ya formado
-def copyWavFromBytes(bytesFromWav):
+def copyWavFromBytes(bytesFromWav, WAVE_COPY_FILENAME):
     # print(bytesFromWav[:44])
     # Obtener características del archivo WAV desde los bytes
     n_channels, sampwidth, framerate, _ = obtener_caracteristicas_wav_desde_bytes(bytesFromWav)
@@ -92,7 +92,6 @@ def copyWavFromBytes(bytesFromWav):
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
     # Conseguimos el path junto con el nombre donde se copiará el WAV
-    WAVE_COPY_FILENAME = "CopiaBytes.wav"
     copyVersion_path = os.path.join(script_dir, WAVE_COPY_FILENAME)
 
     # Abrimos ambos archivos, el de copia solo de escritura, y el original solo de lectura
@@ -225,13 +224,13 @@ def sendBytesDirectly(bytesFromWav):
 # Llamada asíncrona que envía a humeAI los bytes recibidos como parámetros
 async def sendBytesDirectlyAsync(bytesFromWav):
     print(bytesFromWav[:44])
-    bytesFromWav_copy = base64.b64encode(bytesFromWav) 
+    bytesFromWav64 = convertBytesto64(bytesFromWav) 
     # Se ejecuta el resultado final enviándolo y analizando el audio
     async def main():
         client = HumeStreamClient("LIoNt2anG1QMGhnVsNICTIIQqHwotID6hc8C7SFinTGi2ccu")
         config = ProsodyConfig()
         async with client.connect([config]) as socket:
-            result = await socket.send_bytes(bytesFromWav_copy)
+            result = await socket.send_bytes(bytesFromWav64)
             pprint.pprint(result)
             return result
 
@@ -291,21 +290,24 @@ def get_pitch(filename):
 def dividir_audio(bytesFromWav):
     segmentos = []
 
-    _, _, framerate, num_frames = obtener_caracteristicas_wav_desde_bytes(bytesFromWav)
+    # Agregar los primeros 44 bytes a cada segmento
+    header_bytes = bytesFromWav[:44]
+
+    nChannels, sampWidth, framerate, num_frames = obtener_caracteristicas_wav_desde_bytes(bytesFromWav)
     
     duration = num_frames / framerate  # Duración total del audio en segundos
         
     # Calcular el número de segmentos
     num_segmentos = int(duration / 5) + 1
-    
     # Dividir el audio en segmentos de máximo 5 segundos
     inicio_frame = 0
     for i in range(num_segmentos):
-        fin_frame = min(inicio_frame + 5 * framerate, len(bytesFromWav))
-        segmento = bytesFromWav[inicio_frame:fin_frame]
+        fin_frame = min(inicio_frame + 5 * framerate * nChannels * sampWidth, len(bytesFromWav))
+        segmento = header_bytes + bytesFromWav[inicio_frame:fin_frame]
+        print(len(bytesFromWav))
         segmentos.append(segmento)
         inicio_frame = fin_frame
-    
+        # copyWavFromBytes(segmento, "Holaaa" + str(i) + ".wav")
     return segmentos
 
 
@@ -313,8 +315,34 @@ def dividir_audio(bytesFromWav):
 
 ###Pruebas todo esto
 
+async def sendBytesDirectlyAsyncPruebas(bytesSegments):
+    for segment in bytesSegments:
+        print(segment[:44])
+
+    segments64 = []
+
+    for segment in bytesSegments:
+        segments64.append(convertBytesto64(segment)) 
+
+    emotionsList = []
+    # Se ejecuta el resultado final enviándolo y analizando el audio
+    async def main():
+        client = HumeStreamClient("LIoNt2anG1QMGhnVsNICTIIQqHwotID6hc8C7SFinTGi2ccu")
+        config = ProsodyConfig()
+        async with client.connect([config]) as socket:
+            for segment in segments64:
+                result = await socket.send_bytes(segment)
+                emotionsList.append(result)
+                pprint.pprint(result)
+            
+            return emotionsList
+
+    return await main()
+
+
+
 script_dir = os.path.dirname(os.path.abspath(__file__))
-file_path = "Original.wav"
+file_path = "1000Cosas2.wav"
 originalVersion_path = os.path.join(script_dir, file_path)
 bytesToSend =  getBytesFromWav(originalVersion_path)
 
@@ -324,7 +352,7 @@ bytesToSend =  getBytesFromWav(originalVersion_path)
 
 # copyWavFromBytes(bytesToSend)
 # sendBytesDirectly(bytesToSend)
-sendBytesFromLoadedWav("Original.wav")
+# sendBytesFromLoadedWav("Original.wav")
 # amplitudes = get_wav_amplitudes(originalVersion_path)
 # print("Amplitudes:", amplitudes)
 # longitud_de_onda = obtener_longitud_de_onda(originalVersion_path)
@@ -333,11 +361,10 @@ sendBytesFromLoadedWav("Original.wav")
 # print("Tono:", pitch)
 
 
+
 segmentos = dividir_audio(bytesToSend)
 
-for segment in segmentos:
-    convertBytesto64(segment)
-
+asyncio.run(sendBytesDirectlyAsyncPruebas(segmentos))
 # def guardar_segmentos(segmentos, output_folder):
 #     if not os.path.exists(output_folder):
 #         os.makedirs(output_folder)
