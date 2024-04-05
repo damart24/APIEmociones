@@ -298,6 +298,7 @@ def dividir_audio(bytesFromWav):
     duration = num_frames / framerate  # Duración total del audio en segundos
         
     # Calcular el número de segmentos
+    #Mirar para parametrizarlo
     num_segmentos = int(duration / 5) + 1
     # Dividir el audio en segmentos de máximo 5 segundos
     inicio_frame = 0
@@ -365,6 +366,9 @@ bytesToSend =  getBytesFromWav(originalVersion_path)
 segmentos = dividir_audio(bytesToSend)
 
 asyncio.run(sendBytesDirectlyAsyncPruebas(segmentos))
+
+
+
 # def guardar_segmentos(segmentos, output_folder):
 #     if not os.path.exists(output_folder):
 #         os.makedirs(output_folder)

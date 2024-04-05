@@ -13,7 +13,7 @@ HECHO!!!
 
 Dividir audio, chopearlo en diferentes audios si es muy largo
 
-Hecho que no aplicado
+HECHO!!!
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -21,3 +21,6 @@ Mirar como genera wit los wav y exportarlos de alguna manera para enviarlos al s
 
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Audio analizado por segmentos cada emoción, características del sonido, las emociones, tiempos, nombre del audio
