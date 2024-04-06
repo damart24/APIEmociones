@@ -305,18 +305,14 @@ def dividir_audio(bytesFromWav):
     for i in range(num_segmentos):
         fin_frame = min(inicio_frame + 5 * framerate * nChannels * sampWidth, len(bytesFromWav))
         segmento = header_bytes + bytesFromWav[inicio_frame:fin_frame]
-        print(len(bytesFromWav))
         segmentos.append(segmento)
         inicio_frame = fin_frame
         # copyWavFromBytes(segmento, "Holaaa" + str(i) + ".wav")
     return segmentos
 
-
-
-
 ###Pruebas todo esto
 
-async def sendBytesDirectlyAsyncPruebas(bytesSegments):
+def sendBytesDirectlyAsyncPruebas(bytesSegments):
     for segment in bytesSegments:
         print(segment[:44])
 
@@ -331,14 +327,19 @@ async def sendBytesDirectlyAsyncPruebas(bytesSegments):
         client = HumeStreamClient("LIoNt2anG1QMGhnVsNICTIIQqHwotID6hc8C7SFinTGi2ccu")
         config = ProsodyConfig()
         async with client.connect([config]) as socket:
-            for segment in segments64:
-                result = await socket.send_bytes(segment)
+            for segment64 in segments64:
+                print(type(segment64))
+                print(segment64[:44])
+                decoded_data = base64.b64decode(segment64)
+
+                print(decoded_data[:44])
+                result = await socket.send_bytes(segment64)
                 emotionsList.append(result)
-                pprint.pprint(result)
+                # pprint.pprint(result)
             
             return emotionsList
 
-    return await main()
+    return main()
 
 
 

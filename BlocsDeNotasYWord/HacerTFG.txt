@@ -1,3 +1,6 @@
+Audio analizado por segmentos cada emoción, características del sonido, las emociones, tiempos, nombre del audio
+
+---------------------------------------------------------------------------------------------------------------------------------------------
 
 Hacer algoritmo de emociones y coger variables del audio, solo he encontrado por ahora la amplitud, volumen, frequency, pitch, wavelength (Volumen y amplitud es lo mismo) 
 
@@ -18,9 +21,3 @@ HECHO!!!
 ---------------------------------------------------------------------------------------------------------------------------------------------
 
 Mirar como genera wit los wav y exportarlos de alguna manera para enviarlos al servidor de python
-
-
----------------------------------------------------------------------------------------------------------------------------------------------
-
-
-Audio analizado por segmentos cada emoción, características del sonido, las emociones, tiempos, nombre del audio

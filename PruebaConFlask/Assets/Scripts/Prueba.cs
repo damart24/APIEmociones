@@ -5,14 +5,14 @@ using System.IO;
 
 public class Prueba : MonoBehaviour
 {
+    [SerializeField]
+    string fileName; // Cambia esto con la ruta correcta de tu archivo WAV
     IEnumerator Start()
     {
         // URL del servidor Flask
         string url = "http://127.0.0.1:5000";
 
         // Ruta del archivo WAV que quieres enviar
-        string fileName = "Original2.0.wav"; // Cambia esto con la ruta correcta de tu archivo WAV
-
         string filePath = Path.Combine(Application.streamingAssetsPath, fileName);
         // Leer los bytes del archivo WAV
 
@@ -42,17 +42,6 @@ public class Prueba : MonoBehaviour
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-
         // Realizar una solicitud HTTP GET al servidor Flask
         // Al acabar esta llamada se liberaran todos los recursos relacionados con la URL
         using (UnityWebRequest www = UnityWebRequest.Get(url))
@@ -75,7 +64,8 @@ public class Prueba : MonoBehaviour
             {
                 // Obtener la respuesta del servidor
                 string response = www.downloadHandler.text;
-                Debug.Log("Respuesta del servidor: " + response);
+                Debug.Log("Respuesta del servidor: " + response + " " + response.GetType());
+                
             }
         }
     }
