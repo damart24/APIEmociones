@@ -132,6 +132,10 @@ def algoritmoEmocionesBasicoPrueba(emotionsList):
 
 # Función para ordenar las emociones en cada categoría
 def sort_emotions_by_category(emotions_by_category, emotions_dict):
+    # Verificar si hay una advertencia de que no se detectó ningún discurso
+    if 'prosody' in emotions_dict and 'warning' in emotions_dict['prosody'] and emotions_dict['prosody']['warning'] == 'No speech detected.':
+        return {category: 0 for category in emotions_by_category}
+    
     emotions_list = emotions_dict['prosody']['predictions'][0]['emotions']
     
     # Inicializar un diccionario para almacenar la suma de puntuaciones por categoría
@@ -165,6 +169,29 @@ def algoritmoEmociones(emotionsList):
 
     return sorted_emotions_by_category
 
+def algoritmoEmociones2(emotionsList):
+    # Definir el diccionario de emociones por categoría
+    emotions_by_category = {
+        'Felicidad': ['Admiration', 'Amusement', 'Contentment', 'Triumph', 'Determination',
+                    'Adoration', 'Joy', 'Sympathy', 'Love', 'Excitement', 'Desire',
+                    'Interest', 'Satisfaction', 'Romance', 'Surprise (positive)',
+                    'Concentration', 'Ecstasy'],
+        'Tristeza': ['Boredom', 'Distress', 'Disappointment', 'Tiredness', 'Sadness',
+                     'Calmness', 'Nostalgia', 'Relief', 'Surprise (negative)'],
+        'Miedo': ['Anxiety', 'Confusion', 'Tiredness', 'Awe', 'Embarrassment', 'Shame',
+                'Doubt', 'Horror', 'Fear', 'Confusion', 'Empathic Pain', 'Contemplation'],
+        'Asco': ['Awkwardness', 'Disgust', 'Craving', 'Pride', 'Aesthetic Appreciation'],
+        'Enfado': ['Guilt', 'Annoyance', 'Anger', 'Contempt', 'Envy', 'Pain', 'Craving', 'Entrancement']
+    }
+    emotionsList2 = []
+    for emotion in emotionsList:
+        sorted_emotions_by_category = sort_emotions_by_category(emotions_by_category, emotion)
+        emotionsList2.append(sorted_emotions_by_category)
+    # Ordenar las emociones por categoría
+    
+
+    return emotionsList2
+
 # Obtengo los bytes de un wav a partir de su nombre, en la ubicación en la que está el archivo de python
 def getBytesFromWav(wavName):
     # Obtener la ruta del directorio del script
@@ -187,7 +214,7 @@ def getBytesFromWav(wavName):
     return wav_bytes
 
 # Convierte los bytes recibidos en bytes en formato 64 bytes
-def convertBytesto64(wav_bytes):
+async def convertBytesto64(wav_bytes):
     wav_bytes64 = base64.b64encode(wav_bytes) 
     return wav_bytes64
 
@@ -297,13 +324,14 @@ def dividir_audio(bytesFromWav):
     
     duration = num_frames / framerate  # Duración total del audio en segundos
         
+    time = 5
     # Calcular el número de segmentos
     #Mirar para parametrizarlo
-    num_segmentos = int(duration / 5) + 1
+    num_segmentos = int(duration / time) + 1
     # Dividir el audio en segmentos de máximo 5 segundos
     inicio_frame = 0
     for i in range(num_segmentos):
-        fin_frame = min(inicio_frame + 5 * framerate * nChannels * sampWidth, len(bytesFromWav))
+        fin_frame = min(inicio_frame + time * framerate * nChannels * sampWidth, len(bytesFromWav))
         segmento = header_bytes + bytesFromWav[inicio_frame:fin_frame]
         segmentos.append(segmento)
         inicio_frame = fin_frame
@@ -312,41 +340,26 @@ def dividir_audio(bytesFromWav):
 
 ###Pruebas todo esto
 
-def sendBytesDirectlyAsyncPruebas(bytesSegments):
-    for segment in bytesSegments:
-        print(segment[:44])
-
+async def sendBytesDirectlyAsyncPruebas(bytesSegments):
     segments64 = []
 
     for segment in bytesSegments:
-        segments64.append(convertBytesto64(segment)) 
+        encoded_segment = base64.b64encode(segment)
+        segments64.append(encoded_segment)
 
     emotionsList = []
     # Se ejecuta el resultado final enviándolo y analizando el audio
-    async def main():
-        client = HumeStreamClient("LIoNt2anG1QMGhnVsNICTIIQqHwotID6hc8C7SFinTGi2ccu")
-        config = ProsodyConfig()
-        async with client.connect([config]) as socket:
-            for segment64 in segments64:
-                print(type(segment64))
-                print(segment64[:44])
-                decoded_data = base64.b64decode(segment64)
-
-                print(decoded_data[:44])
-                result = await socket.send_bytes(segment64)
-                emotionsList.append(result)
-                # pprint.pprint(result)
-            
-            return emotionsList
-
-    return main()
+    client = HumeStreamClient("LIoNt2anG1QMGhnVsNICTIIQqHwotID6hc8C7SFinTGi2ccu")
+    config = ProsodyConfig()
+    async with client.connect([config]) as socket:
+        for segmentFinal in segments64:            
+            result = await socket.send_bytes(segmentFinal)
+            emotionsList.append(result)
+        
+        return emotionsList
 
 
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-file_path = "1000Cosas2.wav"
-originalVersion_path = os.path.join(script_dir, file_path)
-bytesToSend =  getBytesFromWav(originalVersion_path)
 
 # copyWavVersion()
 
@@ -364,24 +377,12 @@ bytesToSend =  getBytesFromWav(originalVersion_path)
 
 
 
-segmentos = dividir_audio(bytesToSend)
+# script_dir = os.path.dirname(os.path.abspath(__file__))
+# file_path = "1000Cosas1.wav"
+# originalVersion_path = os.path.join(script_dir, file_path)
+# bytesToSend =  getBytesFromWav(originalVersion_path)
 
-asyncio.run(sendBytesDirectlyAsyncPruebas(segmentos))
+# segmentos = dividir_audio(bytesToSend)
 
-
-
-# def guardar_segmentos(segmentos, output_folder):
-#     if not os.path.exists(output_folder):
-#         os.makedirs(output_folder)
-    
-#     for i, segmento in enumerate(segmentos):
-#         output_file = os.path.join(output_folder, f'segmento_{i+1}.wav')
-#         with wave.open(output_file, 'wb') as wav_file:
-#             wav_file.setnchannels(1)  # Mono
-#             wav_file.setsampwidth(2)   # 16 bits por muestra
-#             wav_file.setframerate(44100)  # Frecuencia de muestreo (puedes cambiarla según tus necesidades)
-#             wav_file.writeframes(segmento)
-
-
-
-# guardar_segmentos(segmentos, output_folder)
+# emotions = asyncio.run(sendBytesDirectlyAsyncPruebas(segmentos))
+# algoritmoEmociones2(emotions)
