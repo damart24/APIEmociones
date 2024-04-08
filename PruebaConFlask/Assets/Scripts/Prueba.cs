@@ -65,7 +65,7 @@ public class Prueba : MonoBehaviour
                 // Obtener la respuesta del servidor
                 string response = www.downloadHandler.text;
                 Debug.Log("Respuesta del servidor: " + response + " " + response.GetType());
-                
+                ExcelWriter.Instance.SaveToCsv(response);
             }
         }
     }

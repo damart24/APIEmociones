@@ -68,7 +68,7 @@ def hello_world():
             result[i]['Nombre'] = fileName
         
         print(result)
-        return f"<p>Hello, World! Result: { result } </p>"
+        return f"{ result }</p>"
     else:
         return "<p>Hello, World! No se ha cargado ningún archivo WAV.</p>"
 
