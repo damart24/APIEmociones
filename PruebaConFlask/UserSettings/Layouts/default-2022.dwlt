@@ -446,7 +446,7 @@ MonoBehaviour:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs: 52590000
       m_LastClickedID: 22866
-      m_ExpandedIDs: 2cfbffff
+      m_ExpandedIDs: 2cfbfffff4ffffff
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -562,7 +562,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/StreamingAssets
+    - Assets/Scripts
     m_Globs: []
     m_OriginalText: 
     m_ImportLogFlags: 0
@@ -570,15 +570,15 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/StreamingAssets
+  - Assets/Scripts
   m_LastFoldersGridSize: -1
   m_LastProjectPath: C:\Users\pc\Desktop\Uni\4\TFG\TFG\PruebaConFlask
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: b4590000
-    m_LastClickedID: 22964
+    m_SelectedIDs: a4590000
+    m_LastClickedID: 22948
     m_ExpandedIDs: 000000009a590000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -632,9 +632,9 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_ListAreaState:
-    m_SelectedInstanceIDs: 56590000
-    m_LastClickedInstanceID: 22870
-    m_HadKeyboardFocusLastEvent: 0
+    m_SelectedInstanceIDs: e2590000
+    m_LastClickedInstanceID: 23010
+    m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: 02930000dcb20000e6b6000078b300001cb6000010b300002eaf0000f89900005eb200000eb30000
     m_RenameOverlay:
       m_UserAcceptedRename: 0

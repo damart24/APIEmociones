@@ -35,7 +35,18 @@ public class ExcelWriter : MonoBehaviour
             return;
         }
 
-        string filePath = Path.Combine(Application.streamingAssetsPath, "Save.csv");
+        // Encontrar la posición del primer carácter de comilla simple después de 'Nombre'
+        int startIndex = dataString.IndexOf("\'Nombre\': \'") + "\'Nombre\': \'".Length;
+
+        // Encontrar la posición del último carácter de comilla simple antes de ','
+        int endIndex = dataString.IndexOf("\'", startIndex);
+
+        // Extraer el nombre del archivo usando Substring
+        string nombreArchivoConWav = dataString.Substring(startIndex, endIndex - startIndex);
+        string nombreArchivoSinCsv = nombreArchivoConWav.Replace(".wav", "");
+        string nombreArchivoDefinitivo = nombreArchivoSinCsv + ".csv";
+
+        string filePath = Path.Combine(Application.streamingAssetsPath, nombreArchivoDefinitivo);
 
         // Escribir datos en el archivo CSV
         using (StreamWriter writer = new StreamWriter(filePath))
