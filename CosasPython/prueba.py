@@ -13,19 +13,19 @@
 from asyncio import run
 import asyncio
 from flask import Flask, request
-from HumePrueba import sendBytesDirectlyAsyncPruebas, sendBytesDirectlyAsync
-from HumePrueba import algoritmoEmociones2
-from HumePrueba import dividir_audio
+from HumePrueba import sendBytesDirectlyAsyncSegmentado, algoritmoEmocionesFinal, dividir_audio
 
 app = Flask(__name__)
 print(__name__)
 
 # Variable global para almacenar los bytes del archivo WAV
 uploaded_bytes = None
-
+# Variable global para almacenar el nombre del file del WAV
+fileName = None
 @app.route("/", methods=["POST"])
 def upload_wav():
     global uploaded_bytes
+    global fileName
     # Verificar si se envió un archivo
     if 'file' not in request.files:
         return 'No se envió ningún archivo', 400
@@ -38,17 +38,12 @@ def upload_wav():
 
     # Verificar si el archivo es un archivo WAV
     if file and file.filename.endswith('.wav'):
-        # Guardar el archivo en el servidor
-        # file.save(file.filename)
         # Lee los bytes del archivo
         bytesFromWav = file.read()
         # Reinicia el cursor del archivo para que pueda leerse de nuevo desde el principio
         file.seek(0)
-        # print(len(bytesFromWav))
-        # print(type(bytesFromWav))
-        # print(file.filename)
         uploaded_bytes = bytesFromWav
-     
+        fileName = file.filename
         return 'Archivo WAV subido exitosamente ' + file.filename + ' ', 200
 
     return 'Tipo de archivo no soportado. Por favor, sube un archivo WAV', 400
@@ -56,23 +51,17 @@ def upload_wav():
 @app.route("/")
 def hello_world():
     global uploaded_bytes
-    
+    global fileName
     # Verificar si hay bytes de archivo cargados
     if uploaded_bytes is not None:
-        # segmentos = dividir_audio(uploaded_bytes)
-        # # Obtener el resultado de la función asíncrona
-        # async def get_emotions_async():
-        #     return await sendBytesDirectlyAsyncPruebas(segmentos)
-
         segmentos = dividir_audio(uploaded_bytes)
         # Obtener el resultado de la función asíncrona
 
 
-        emotions_result = asyncio.run(sendBytesDirectlyAsyncPruebas(segmentos))  # Await the result here
-        #
-
+        emotions_result = asyncio.run(sendBytesDirectlyAsyncSegmentado(segmentos))  # Await the result here
         # Procesar el resultado obtenido
-        result = algoritmoEmociones2(emotions_result)
+        result = algoritmoEmocionesFinal(emotions_result)
+        result[0]['Nombre'] = fileName
         print(result)
         return f"<p>Hello, World! Result: { result } </p>"
     else:
