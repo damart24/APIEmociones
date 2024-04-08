@@ -12,6 +12,28 @@ import numpy as np
 import scipy.io.wavfile as wav
 from scipy.signal import find_peaks
 
+
+# Obtengo los bytes de un wav a partir de su nombre, en la ubicación en la que está el archivo de python
+def getBytesFromWav(wavName):
+    # Obtener la ruta del directorio del script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Conseguimos el path junto con el nombre de donde sacaremos el WAV
+    WAVE_ORIGINAL_FILENAME = wavName
+    originalVersion_path = os.path.join(script_dir, WAVE_ORIGINAL_FILENAME)
+
+    # Leemos los bytes del archivo WAV original
+    # Abrir el archivo WAV en modo binario
+    with open(originalVersion_path, 'rb') as f:
+        # Leer todos los bytes del archivo
+        wav_bytes = f.read()
+    
+    print(wav_bytes[:44])
+    print(type(wav_bytes))
+
+
+    return wav_bytes
+
 # Función para ordenar las emociones en cada categoría
 def sort_emotions_by_category(emotions_by_category, emotions_dict):
     # Verificar si hay una advertencia de que no se detectó ningún discurso
@@ -28,6 +50,9 @@ def sort_emotions_by_category(emotions_by_category, emotions_dict):
             if any(substring in emotion['name'] for substring in category_emotions):
                 summed_emotions[category] += emotion['score']
     
+    summed_emotions['timeBeginMark'] = emotions_dict['prosody']['predictions'][0]['time']['begin']
+    summed_emotions['timeEndMark'] = emotions_dict['prosody']['predictions'][0]['time']['end']
+
     return summed_emotions
 
 def algoritmoEmocionesFinal(emotionsList):
@@ -48,9 +73,6 @@ def algoritmoEmocionesFinal(emotionsList):
     emotionsList2 = []
     for emotion in emotionsList:
         sorted_emotions_by_category = sort_emotions_by_category(emotions_by_category, emotion)
-        # Añadir la nueva categoría y sus emociones asociadas al diccionario summed_emotions
-        nueva_categoria = 'Pitch'
-        sorted_emotions_by_category[nueva_categoria] = 0
         emotionsList2.append(sorted_emotions_by_category)
     # Ordenar las emociones por categoría
     
@@ -109,32 +131,33 @@ def dividir_audio(bytesFromWav):
 ###Métodos de conseguir características
 
 # Método con el que desde un path de un wav recibido devuelve una longitud de onda de dicho wav
-def obtener_longitud_de_onda(file_path):
+def get_longitud_de_onda(audio_data):
     velocidad_del_sonido = 343
-    with wave.open(file_path, 'rb') as wav_file:
-        framerate = wav_file.getframerate()
-        periodo = 1 / framerate
-        frecuencia = 1 / periodo
-        longitud_de_onda = velocidad_del_sonido / frecuencia
+
+    _, _, framerate, _ = obtener_caracteristicas_wav_desde_bytes(audio_data)
+    periodo = 1 / framerate
+    frecuencia = 1 / periodo
+    longitud_de_onda = velocidad_del_sonido / frecuencia
+
     return longitud_de_onda
 
 # Método con el que desde un path de un wav recibido devuelve la amplitud media de dicho wav
-def get_wav_amplitudes(file_path):
-    with wave.open(file_path, 'rb') as wav_file:
-        # Read all audio frames as byte data
-        audio_data = wav_file.readframes(wav_file.getnframes())
-        # Convert byte data to a numpy array
-        audio_array = np.frombuffer(audio_data, dtype=np.int16)
-        # Normalize the audio data to range [-1, 1]
-        normalized_audio = audio_array / np.iinfo(audio_array.dtype).max
-        # Calculate the average amplitude
-        average_amplitude = np.mean(np.abs(normalized_audio))
+def get_wav_amplitudes(audio_data):
+    # Convert byte data to a numpy array
+    audio_array = np.frombuffer(audio_data, dtype=np.int16)
+    # Normalize the audio data to range [-1, 1]
+    normalized_audio = audio_array / np.iinfo(audio_array.dtype).max
+    # Calculate the average amplitude
+    average_amplitude = np.mean(np.abs(normalized_audio))
+
     return average_amplitude
 
 # Método con el que desde un path de un wav recibido devuelve el pitch de dicho wav
-def get_pitch(filename):
-    # Leer el archivo WAV
-    samplerate, data = wav.read(filename)
+def get_pitch(bytes_wav):
+    # Convertir los bytes a una matriz NumPy
+    data = np.frombuffer(bytes_wav, dtype=np.int16)  # Suponiendo que el audio es de 16 bits
+    
+    _, _, framerate, _ = obtener_caracteristicas_wav_desde_bytes(bytes_wav)
     
     # Convertir a mono si es estéreo
     if len(data.shape) > 1:
@@ -144,7 +167,7 @@ def get_pitch(filename):
     fft_data = np.fft.fft(data)
     
     # Obtener las frecuencias correspondientes a la FFT
-    freqs = np.fft.fftfreq(len(data), 1/samplerate)
+    freqs = np.fft.fftfreq(len(data), 1/framerate)
     
     # Encontrar los picos en los datos de la FFT
     peaks, _ = find_peaks(np.abs(fft_data))
@@ -158,9 +181,8 @@ def get_pitch(filename):
     return pitch
 
 
-
-###Pruebas todo esto
-
+# Método al que se le pasa el wav segmentado y analizada y devuelve un número de listas
+# con las emociones, el número es igual al número de segmentos enviados
 async def sendBytesDirectlyAsyncSegmentado(bytesSegments):
     segments64 = []
 
@@ -180,24 +202,6 @@ async def sendBytesDirectlyAsyncSegmentado(bytesSegments):
         return emotionsList
 
 
-
-
-# copyWavVersion()
-
-# Obtener la ruta del directorio del script
-
-# copyWavFromBytes(bytesToSend)
-# sendBytesDirectly(bytesToSend)
-# sendBytesFromLoadedWav("Original.wav")
-# amplitudes = get_wav_amplitudes(originalVersion_path)
-# print("Amplitudes:", amplitudes)
-# longitud_de_onda = obtener_longitud_de_onda(originalVersion_path)
-# print("Longitud de onda:", longitud_de_onda, "segundos")
-# pitch = get_pitch(originalVersion_path)
-# print("Tono:", pitch)
-
-
-
 # script_dir = os.path.dirname(os.path.abspath(__file__))
 # file_path = "1000Cosas1.wav"
 # originalVersion_path = os.path.join(script_dir, file_path)
@@ -205,5 +209,13 @@ async def sendBytesDirectlyAsyncSegmentado(bytesSegments):
 
 # segmentos = dividir_audio(bytesToSend)
 
-# emotions = asyncio.run(sendBytesDirectlyAsyncPruebas(segmentos))
+# emotions = asyncio.run(sendBytesDirectlyAsyncSegmentado(segmentos))
 # algoritmoEmocionesFinal(emotions)
+
+
+# amplitudes = get_wav_amplitudes(originalVersion_path)
+# print("Amplitudes:", amplitudes)
+# longitud_de_onda = obtener_longitud_de_onda(originalVersion_path)
+# print("Longitud de onda:", longitud_de_onda, "segundos")
+# pitch = get_pitch(originalVersion_path)
+# print("Tono:", pitch)

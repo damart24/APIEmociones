@@ -14,7 +14,7 @@ from asyncio import run
 import asyncio
 from flask import Flask, request
 from HumePrueba import sendBytesDirectlyAsyncSegmentado, algoritmoEmocionesFinal, dividir_audio
-
+from HumePrueba import get_pitch, get_wav_amplitudes, get_longitud_de_onda
 app = Flask(__name__)
 print(__name__)
 
@@ -56,12 +56,17 @@ def hello_world():
     if uploaded_bytes is not None:
         segmentos = dividir_audio(uploaded_bytes)
         # Obtener el resultado de la función asíncrona
-
-
         emotions_result = asyncio.run(sendBytesDirectlyAsyncSegmentado(segmentos))  # Await the result here
+
         # Procesar el resultado obtenido
         result = algoritmoEmocionesFinal(emotions_result)
-        result[0]['Nombre'] = fileName
+
+        for i, segment in enumerate(segmentos):
+            result[i]['Pitch'] = get_pitch(segment)
+            result[i]['Amplitude'] = get_wav_amplitudes(segment)
+            result[i]['Longitud_Onda'] = get_longitud_de_onda(segment)
+            result[i]['Nombre'] = fileName
+        
         print(result)
         return f"<p>Hello, World! Result: { result } </p>"
     else:
