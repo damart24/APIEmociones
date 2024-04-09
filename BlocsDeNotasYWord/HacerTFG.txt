@@ -1,8 +1,10 @@
 Audio analizado por segmentos cada emoción, características del sonido, las emociones, tiempos, nombre del audio
 
+Cuando son 0 tiene solo 9 columnas, variable para ver los rápido que habla alguien, número de palabras minuto, tono más agudo, volumen de la voz, intensidad decibelios, y frecuencia en hercios, número de palabras por minuto
+Mirar para automatizar lo de audacity
 ---------------------------------------------------------------------------------------------------------------------------------------------
 
-Hacer algoritmo de emociones y coger variables del audio, solo he encontrado por ahora la amplitud, volumen, frequency, pitch, wavelength (Volumen y amplitud es lo mismo) 
+Hacer algoritmo de emociones y coger variables del audio, solo he encontrado por ahora la amplitud, volumen, frequency, pitch, wavelength (Volumen y amplitud es lo mismo) Formantes
 
 Todas cogidas ya menos frequency que no se si es samplerate, si es eso es muy facil y está hecho
 ---------------------------------------------------------------------------------------------------------------------------------------------

@@ -38,7 +38,10 @@ def getBytesFromWav(wavName):
 def sort_emotions_by_category(emotions_by_category, emotions_dict):
     # Verificar si hay una advertencia de que no se detectó ningún discurso
     if 'prosody' in emotions_dict and 'warning' in emotions_dict['prosody'] and emotions_dict['prosody']['warning'] == 'No speech detected.':
-        return {category: 0 for category in emotions_by_category}
+        result = {category: 0 for category in emotions_by_category}
+        result['timeBeginMark'] = 0
+        result['timeEndMark'] = 0
+        return result
     
     emotions_list = emotions_dict['prosody']['predictions'][0]['emotions']
     
@@ -112,7 +115,7 @@ def dividir_audio(bytesFromWav):
     
     duration = num_frames / framerate  # Duración total del audio en segundos
         
-    time = 5
+    time = 1
     # Calcular el número de segmentos
     #Mirar para parametrizarlo
     num_segmentos = int(duration / time) + 1
