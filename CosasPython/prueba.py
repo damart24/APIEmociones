@@ -14,8 +14,9 @@ from asyncio import run
 import asyncio
 from flask import Flask, request
 from HumePrueba import sendBytesDirectlyAsyncSegmentado, algoritmoEmocionesFinal, dividir_audio
-from HumePrueba import get_pitch, get_wav_amplitudes, get_longitud_de_onda
+from HumePrueba import getCharacteristics
 app = Flask(__name__)
+#Aqui es donde se printea el nombre
 print(__name__)
 
 # Variable global para almacenar los bytes del archivo WAV
@@ -62,9 +63,14 @@ def hello_world():
         result = algoritmoEmocionesFinal(emotions_result)
 
         for i, segment in enumerate(segmentos):
-            result[i]['Pitch'] = get_pitch(segment)
-            result[i]['Amplitude'] = get_wav_amplitudes(segment)
-            result[i]['Longitud_Onda'] = get_longitud_de_onda(segment)
+            intensity, framesWithVoices, framesWithoutVoices, averagePitch, maximumPitch, minimumPitch, standardDesviationPitch = getCharacteristics(segment)
+            result[i]['intensity'] = intensity
+            result[i]['FramesWithoutVoices'] = framesWithoutVoices
+            result[i]['FramesWithVoices'] = framesWithVoices
+            result[i]['AveragePitch'] = averagePitch
+            result[i]['MaximumPitch'] = maximumPitch
+            result[i]['MinimumPitch'] = minimumPitch
+            result[i]['StandardDesviationPitch'] = standardDesviationPitch
             result[i]['Nombre'] = fileName
         
         print(result)

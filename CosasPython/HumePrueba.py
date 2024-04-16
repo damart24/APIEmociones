@@ -11,7 +11,8 @@ from hume.models.config import ProsodyConfig
 import numpy as np
 import scipy.io.wavfile as wav
 from scipy.signal import find_peaks
-
+import parselmouth
+import soundfile as sf
 
 # Obtengo los bytes de un wav a partir de su nombre, en la ubicación en la que está el archivo de python
 def getBytesFromWav(wavName):
@@ -27,10 +28,6 @@ def getBytesFromWav(wavName):
     with open(originalVersion_path, 'rb') as f:
         # Leer todos los bytes del archivo
         wav_bytes = f.read()
-    
-    print(wav_bytes[:44])
-    print(type(wav_bytes))
-
 
     return wav_bytes
 
@@ -115,7 +112,7 @@ def dividir_audio(bytesFromWav):
     
     duration = num_frames / framerate  # Duración total del audio en segundos
         
-    time = 1
+    time = 5
     # Calcular el número de segmentos
     #Mirar para parametrizarlo
     num_segmentos = int(duration / time) + 1
@@ -129,60 +126,42 @@ def dividir_audio(bytesFromWav):
         # copyWavFromBytes(segmento, "Holaaa" + str(i) + ".wav")
     return segmentos
 
-
-
 ###Métodos de conseguir características
 
-# Método con el que desde un path de un wav recibido devuelve una longitud de onda de dicho wav
-def get_longitud_de_onda(audio_data):
-    velocidad_del_sonido = 343
+def getCharacteristics(segment):
+    with io.BytesIO(segment) as f:
+        audio_data, framerate = sf.read(f)
+        
+    # Convierte los datos de audio a un objeto de sonido de Parselmouth
+    sound = parselmouth.Sound(audio_data.T, sampling_frequency=framerate)
+    # Extrae el pitch (tono) utilizando el algoritmo de "To Pitch (cc)"
+    pitch = sound.to_pitch()
+    framesWithVoices = pitch.count_voiced_frames()
+    framesWithoutVoices = pitch.n_frames
+    intensity =  sound.get_intensity()
+    pitch_values = pitch.selected_array['frequency']
 
-    _, _, framerate, _ = obtener_caracteristicas_wav_desde_bytes(audio_data)
-    periodo = 1 / framerate
-    frecuencia = 1 / periodo
-    longitud_de_onda = velocidad_del_sonido / frecuencia
+    # Filtrar los valores de pitch que no sean 0
+    pitch_values = [x for x in pitch_values if x != 0]
+    if(len(pitch_values) > 0):
+        # Calcula el promedio (average) del pitch
+        average_pitch = sum(pitch_values) / len(pitch_values)
 
-    return longitud_de_onda
+        # Obtiene el máximo (maximum) del pitch
+        maximum_pitch = max(pitch_values)
 
-# Método con el que desde un path de un wav recibido devuelve la amplitud media de dicho wav
-def get_wav_amplitudes(audio_data):
-    # Convert byte data to a numpy array
-    audio_array = np.frombuffer(audio_data, dtype=np.int16)
-    # Normalize the audio data to range [-1, 1]
-    normalized_audio = audio_array / np.iinfo(audio_array.dtype).max
-    # Calculate the average amplitude
-    average_amplitude = np.mean(np.abs(normalized_audio))
+        # Obtiene el mínimo (minimum) del pitch
+        minimum_pitch = min(pitch_values)
 
-    return average_amplitude
+        # Calcula la desviación estándar (standard deviation) del pitch
+        mean = sum(pitch_values) / len(pitch_values)
+        variance = sum((x - mean) ** 2 for x in pitch_values) / len(pitch_values)
+        standardDesviationPitch = variance ** 0.5
 
-# Método con el que desde un path de un wav recibido devuelve el pitch de dicho wav
-def get_pitch(bytes_wav):
-    # Convertir los bytes a una matriz NumPy
-    data = np.frombuffer(bytes_wav, dtype=np.int16)  # Suponiendo que el audio es de 16 bits
-    
-    _, _, framerate, _ = obtener_caracteristicas_wav_desde_bytes(bytes_wav)
-    
-    # Convertir a mono si es estéreo
-    if len(data.shape) > 1:
-        data = data.mean(axis=1)
-    
-    # Calcular la Transformada de Fourier
-    fft_data = np.fft.fft(data)
-    
-    # Obtener las frecuencias correspondientes a la FFT
-    freqs = np.fft.fftfreq(len(data), 1/framerate)
-    
-    # Encontrar los picos en los datos de la FFT
-    peaks, _ = find_peaks(np.abs(fft_data))
-    
-    # Extraer las frecuencias positivas
-    pos_freqs = freqs[peaks]
-    
-    # Calcular el tono (asumiendo que el primer pico corresponde a la frecuencia fundamental)
-    pitch = abs(pos_freqs[0])
-    
-    return pitch
-
+        
+        return intensity, framesWithVoices, framesWithoutVoices, average_pitch, maximum_pitch, minimum_pitch, standardDesviationPitch
+    else:
+        return 0, 0, 0, 0, 0, 0, 0
 
 # Método al que se le pasa el wav segmentado y analizada y devuelve un número de listas
 # con las emociones, el número es igual al número de segmentos enviados
@@ -214,11 +193,15 @@ async def sendBytesDirectlyAsyncSegmentado(bytesSegments):
 
 # emotions = asyncio.run(sendBytesDirectlyAsyncSegmentado(segmentos))
 # algoritmoEmocionesFinal(emotions)
-
-
-# amplitudes = get_wav_amplitudes(originalVersion_path)
-# print("Amplitudes:", amplitudes)
-# longitud_de_onda = obtener_longitud_de_onda(originalVersion_path)
-# print("Longitud de onda:", longitud_de_onda, "segundos")
-# pitch = get_pitch(originalVersion_path)
-# print("Tono:", pitch)
+# print(" ")
+# for segment in segmentos:
+#     intensity, framesWithVoices, framesWithoutVoices, averagePitch, maximumPitch, minimumPitch, standardDesviationPitch = getCharacteristics(segment)
+#     # Imprime cada elemento en una línea separada
+#     print("Intensidad:", intensity)
+#     print("Frames hablados:", framesWithVoices)
+#     print("Frames totales:", framesWithoutVoices)
+#     print("Media del pitch:", averagePitch)
+#     print("Pitch máximo:", maximumPitch)
+#     print("Pitch mínimo:", minimumPitch)
+#     print("Desviación estándar:", standardDesviationPitch)
+#     print(" ")

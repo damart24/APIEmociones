@@ -7,6 +7,7 @@ import wave
 
 from hume import HumeBatchClient, HumeStreamClient
 from hume.models.config import ProsodyConfig
+import numpy as np
 
 def face_test():
     from hume.models.config import FaceConfig
@@ -304,6 +305,22 @@ def hello_world2():
     asyncio.run(main())
     return "hola"
 
+# Crea un wav a partir de los bytes y devuelve nchannels, samwidth, framerate y numFrames
+def obtener_caracteristicas_wav_desde_bytes(bytes_wav):
+    # Crear un objeto de archivo WAV a partir de los bytes
+    wav_file = wave.open(io.BytesIO(bytes_wav))
+
+    # Obtener características del archivo WAV
+    n_channels = wav_file.getnchannels()
+    sampWidth = wav_file.getsampwidth()
+    frameRate = wav_file.getframerate()
+    numFrames = wav_file.getnframes()
+
+    # Cerrar el archivo WAV
+    wav_file.close()
+
+    return n_channels, sampWidth, frameRate, numFrames
+
 # Copia el wav y envía dicha copia a HumeAI
 def copyWavVersion():
     # Obtener la ruta del directorio del script
@@ -518,3 +535,39 @@ async def sendBytesDirectlyAsync(bytesFromWav):
             return result
 
     return await main()
+
+# Método con el que desde un path de un wav recibido devuelve una longitud de onda de dicho wav
+def get_longitud_de_onda(audio_data):
+    velocidad_del_sonido = 343
+
+    _, _, framerate, _ = obtener_caracteristicas_wav_desde_bytes(audio_data)
+    periodo = 1 / framerate
+    frecuencia = 1 / periodo
+    longitud_de_onda = velocidad_del_sonido / frecuencia
+
+    return longitud_de_onda
+
+# Método con el que desde un path de un wav recibido devuelve la amplitud media de dicho wav
+def get_wav_amplitudes(audio_data):
+    # Convert byte data to a numpy array
+    audio_array = np.frombuffer(audio_data, dtype=np.int16)
+    # Normalize the audio data to range [-1, 1]
+    normalized_audio = audio_array / np.iinfo(audio_array.dtype).max
+    # Calculate the average amplitude
+    average_amplitude = np.mean(np.abs(normalized_audio))
+
+    return average_amplitude
+
+# Método con el que desde un path de un wav recibido devuelve el pitch de dicho wav
+def get_pitchPrueba(bytes_wav_segmentos):
+    bytes_wav = bytes_wav_segmentos[0]
+
+    with io.BytesIO(bytes_wav) as f:
+        audio_data, framerate = sf.read(f)
+    # Convierte los datos de audio a un objeto de sonido de Parselmouth
+    sound = parselmouth.Sound(audio_data.T, sampling_frequency=framerate)
+
+    # Extrae el pitch (tono) utilizando el algoritmo de "To Pitch (cc)"
+    pitch = sound.to_pitch()
+    
+    return pitch

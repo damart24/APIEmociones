@@ -47,9 +47,9 @@ public class ExcelWriter : MonoBehaviour
         string nombreArchivoDefinitivo = nombreArchivoSinCsv + ".csv";
 
         string filePath = Path.Combine(Application.streamingAssetsPath, nombreArchivoDefinitivo);
-
+        string filePathComplete = filePath.Replace("StreamingAssets", "CSVs");
         // Escribir datos en el archivo CSV
-        using (StreamWriter writer = new StreamWriter(filePath))
+        using (StreamWriter writer = new StreamWriter(filePathComplete))
         {
             // Escribir encabezados
             string headers = string.Join(",", dataList[0].Keys);
@@ -68,7 +68,7 @@ public class ExcelWriter : MonoBehaviour
             }
         }
 
-        Debug.Log("Archivo CSV guardado en: " + filePath);
+        Debug.Log("Archivo CSV guardado en: " + filePathComplete);
     }
 
     // Método para parsear el string en una lista de diccionarios
