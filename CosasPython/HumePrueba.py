@@ -14,6 +14,9 @@ from scipy.signal import find_peaks
 import parselmouth
 import soundfile as sf
 
+
+beginTime = []
+endTime = []
 # Obtengo los bytes de un wav a partir de su nombre, en la ubicación en la que está el archivo de python
 def getBytesFromWav(wavName):
     # Obtener la ruta del directorio del script
@@ -32,12 +35,12 @@ def getBytesFromWav(wavName):
     return wav_bytes
 
 # Función para ordenar las emociones en cada categoría
-def sort_emotions_by_category(emotions_by_category, emotions_dict):
+def sort_emotions_by_category(emotions_by_category, emotions_dict, beginTime, endTime):
     # Verificar si hay una advertencia de que no se detectó ningún discurso
     if 'prosody' in emotions_dict and 'warning' in emotions_dict['prosody'] and emotions_dict['prosody']['warning'] == 'No speech detected.':
         result = {category: 0 for category in emotions_by_category}
-        result['timeBeginMark'] = 0
-        result['timeEndMark'] = 0
+        result['timeBeginMark'] = beginTime
+        result['timeEndMark'] = endTime
         return result
     
     emotions_list = emotions_dict['prosody']['predictions'][0]['emotions']
@@ -55,6 +58,7 @@ def sort_emotions_by_category(emotions_by_category, emotions_dict):
 
     return summed_emotions
 
+
 def algoritmoEmocionesFinal(emotionsList):
     # Definir el diccionario de emociones por categoría
     emotions_by_category = {
@@ -71,12 +75,11 @@ def algoritmoEmocionesFinal(emotionsList):
     }
 
     emotionsList2 = []
-    for emotion in emotionsList:
-        sorted_emotions_by_category = sort_emotions_by_category(emotions_by_category, emotion)
+    for i, emotion in enumerate(emotionsList):
+        sorted_emotions_by_category = sort_emotions_by_category(emotions_by_category, emotion, beginTime[i], endTime[i])
         emotionsList2.append(sorted_emotions_by_category)
     # Ordenar las emociones por categoría
     
-
     return emotionsList2
 
 # Convierte los bytes recibidos en bytes en formato 64 bytes
@@ -118,10 +121,17 @@ def dividir_audio(bytesFromWav):
     num_segmentos = int(duration / time) + 1
     # Dividir el audio en segmentos de máximo 5 segundos
     inicio_frame = 0
+
+    inicio_tiempo = 0
+    fin_tiempo = time
     for i in range(num_segmentos):
         fin_frame = min(inicio_frame + time * framerate * nChannels * sampWidth, len(bytesFromWav))
         segmento = header_bytes + bytesFromWav[inicio_frame:fin_frame]
         segmentos.append(segmento)
+        beginTime.append(inicio_tiempo)
+        endTime.append(fin_tiempo)
+        inicio_tiempo += time
+        fin_tiempo += time
         inicio_frame = fin_frame
         # copyWavFromBytes(segmento, "Holaaa" + str(i) + ".wav")
     return segmentos
@@ -193,6 +203,7 @@ async def sendBytesDirectlyAsyncSegmentado(bytesSegments):
 
 # emotions = asyncio.run(sendBytesDirectlyAsyncSegmentado(segmentos))
 # algoritmoEmocionesFinal(emotions)
+
 # print(" ")
 # for segment in segmentos:
 #     intensity, framesWithVoices, framesWithoutVoices, averagePitch, maximumPitch, minimumPitch, standardDesviationPitch = getCharacteristics(segment)
