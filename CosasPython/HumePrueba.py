@@ -47,16 +47,26 @@ def sort_emotions_by_category(emotions_by_category, emotions_dict, beginTime, en
     
     # Inicializar un diccionario para almacenar la suma de puntuaciones por categoría
     summed_emotions = {category: 0 for category in emotions_by_category}  
-    
+    count_emotions = {category: 0 for category in emotions_by_category}
+
     for emotion in emotions_list:
         for category, category_emotions in emotions_by_category.items():
             if any(substring in emotion['name'] for substring in category_emotions):
                 summed_emotions[category] += emotion['score']
-    
-    summed_emotions['timeBeginMark'] = emotions_dict['prosody']['predictions'][0]['time']['begin']
-    summed_emotions['timeEndMark'] = emotions_dict['prosody']['predictions'][0]['time']['end']
+                count_emotions[category] += 1
 
-    return summed_emotions
+    # Calcular el promedio para cada categoría
+    averaged_emotions = {}
+    for category in summed_emotions:
+        if count_emotions[category] > 0:
+            averaged_emotions[category] = summed_emotions[category] / count_emotions[category]
+        else:
+            averaged_emotions[category] = 0  # o algún otro valor por defecto
+    
+    averaged_emotions['timeBeginMark'] = beginTime
+    averaged_emotions['timeEndMark'] = endTime
+
+    return averaged_emotions
 
 
 def algoritmoEmocionesFinal(emotionsList):
@@ -103,6 +113,47 @@ def obtener_caracteristicas_wav_desde_bytes(bytes_wav):
 
     return n_channels, sampWidth, frameRate, numFrames
 
+
+def copyWavFromBytes(bytesFromWav, WAVE_COPY_FILENAME):
+    # print(bytesFromWav[:44])
+    # Obtener características del archivo WAV desde los bytes
+    n_channels, sampwidth, framerate, _ = obtener_caracteristicas_wav_desde_bytes(bytesFromWav)
+
+    # Imprimir las características obtenidas
+    # print("Número de canales:", n_channels)
+    # print("Ancho de muestra (en bytes):", sampwidth)
+    # print("Frecuencia de muestreo:", framerate)
+
+    # Obtener la ruta del directorio del script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Conseguimos el path junto con el nombre donde se copiará el WAV
+    copyVersion_path = os.path.join(script_dir, WAVE_COPY_FILENAME)
+
+    # Abrimos ambos archivos, el de copia solo de escritura, y el original solo de lectura
+    copyVersionInstance = wave.open(copyVersion_path, 'wb')
+
+    # Copiamos las características del WAV original
+    copyVersionInstance.setnchannels(n_channels)
+    copyVersionInstance.setsampwidth(sampwidth)
+    copyVersionInstance.setframerate(framerate)
+
+    copyVersionInstance.writeframes(bytesFromWav)
+
+    copyVersionInstance.close()
+
+    bytesFromWav_copy = base64.b64encode(bytesFromWav) 
+    # Se ejecuta el resultado final enviándolo y analizando el audio
+    async def main():
+        client = HumeStreamClient("LIoNt2anG1QMGhnVsNICTIIQqHwotID6hc8C7SFinTGi2ccu")
+        config = ProsodyConfig()
+        async with client.connect([config]) as socket:
+            result = await socket.send_bytes(bytesFromWav_copy)
+            pprint.pprint(result)
+
+    asyncio.run(main())
+    return "FuncionaaaaaVersiónCopia"
+
 # Método que divide el audio en fragmentos de 5 segundos como mucho para poderles enviar a HumeAI
 # Tiene una limitación la librería por eso se cortan en fragmentos
 def dividir_audio(bytesFromWav):
@@ -115,7 +166,7 @@ def dividir_audio(bytesFromWav):
     
     duration = num_frames / framerate  # Duración total del audio en segundos
         
-    time = 5
+    time = 1
     # Calcular el número de segmentos
     #Mirar para parametrizarlo
     num_segmentos = int(duration / time) + 1
@@ -194,14 +245,31 @@ async def sendBytesDirectlyAsyncSegmentado(bytesSegments):
         return emotionsList
 
 
+# Este método envía los bytes directamente recibidos convirtiendolos en 64 por si acaso
+async def sendBytesDirectly(bytesFromWav):
+    bytesFromWav64 = base64.b64encode(bytesFromWav)
+    # Se ejecuta el resultado final enviándolo y analizando el audio
+    client = HumeStreamClient("LIoNt2anG1QMGhnVsNICTIIQqHwotID6hc8C7SFinTGi2ccu")
+    config = ProsodyConfig()
+    async with client.connect([config]) as socket:
+        result = await socket.send_bytes(bytesFromWav64)
+        return result
+
+
 # script_dir = os.path.dirname(os.path.abspath(__file__))
-# file_path = "1000Cosas1.wav"
+# file_path = "Hombre3Final.wav"
 # originalVersion_path = os.path.join(script_dir, file_path)
 # bytesToSend =  getBytesFromWav(originalVersion_path)
 
 # segmentos = dividir_audio(bytesToSend)
 
+# emotions = []
+
+# for segment in segmentos:
+#     emotions.append(asyncio.run(sendBytesDirectly(segment)))
+
 # emotions = asyncio.run(sendBytesDirectlyAsyncSegmentado(segmentos))
+# print(type(emotions))
 # algoritmoEmocionesFinal(emotions)
 
 # print(" ")

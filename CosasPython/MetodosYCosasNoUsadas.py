@@ -371,45 +371,7 @@ def copyWavVersion():
 
 # Copia un wav desde unos bytes dado, y envía dicho wav a HumeAI, como la versión anterior pero 
 # desde los bytes en crudo en vez del wav ya formado
-def copyWavFromBytes(bytesFromWav, WAVE_COPY_FILENAME):
-    # print(bytesFromWav[:44])
-    # Obtener características del archivo WAV desde los bytes
-    n_channels, sampwidth, framerate, _ = obtener_caracteristicas_wav_desde_bytes(bytesFromWav)
 
-    # Imprimir las características obtenidas
-    print("Número de canales:", n_channels)
-    print("Ancho de muestra (en bytes):", sampwidth)
-    print("Frecuencia de muestreo:", framerate)
-
-    # Obtener la ruta del directorio del script
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-
-    # Conseguimos el path junto con el nombre donde se copiará el WAV
-    copyVersion_path = os.path.join(script_dir, WAVE_COPY_FILENAME)
-
-    # Abrimos ambos archivos, el de copia solo de escritura, y el original solo de lectura
-    copyVersionInstance = wave.open(copyVersion_path, 'wb')
-
-    # Copiamos las características del WAV original
-    copyVersionInstance.setnchannels(n_channels)
-    copyVersionInstance.setsampwidth(sampwidth)
-    copyVersionInstance.setframerate(framerate)
-
-    copyVersionInstance.writeframes(bytesFromWav)
-
-    copyVersionInstance.close()
-
-    bytesFromWav_copy = base64.b64encode(bytesFromWav) 
-    # Se ejecuta el resultado final enviándolo y analizando el audio
-    async def main():
-        client = HumeStreamClient("LIoNt2anG1QMGhnVsNICTIIQqHwotID6hc8C7SFinTGi2ccu")
-        config = ProsodyConfig()
-        async with client.connect([config]) as socket:
-            result = await socket.send_bytes(bytesFromWav_copy)
-            pprint.pprint(result)
-
-    asyncio.run(main())
-    return "FuncionaaaaaVersiónCopia"
 
 # Algoritmo de prueba donde cojo las 5 emociones mas predominantes
 def algoritmoEmocionesBasicoPrueba(emotionsList):

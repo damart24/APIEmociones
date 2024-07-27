@@ -39,3 +39,6 @@ sysinfo.txt
 Icon?
 ehthumbs.db
 Thumbs.db
+
+# Ignorar archivos .wav
+*.wav
