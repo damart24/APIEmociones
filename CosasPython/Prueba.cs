@@ -21,6 +21,13 @@ public class Prueba : MonoBehaviour
     private float currentAmplitude = 0f; // Variable para almacenar la amplitud actual
     private const float amplitudeThreshold = 0.01f; // Umbral para detectar audio
     string url = "http://127.0.0.1:5000";
+
+    private const float continuousSpeechThreshold = 5f; // 5 seconds
+    private float continuousSpeechDuration = 0f;
+
+    private bool isMonitoringSilence = false;
+    private float silenceDuration = 0f;
+    private float silenceThreshold = 2f; // Duration of silence to detect end of speech
     void Start()
     {
         // Asegúrate de que Oculus es el sistema VR activo
@@ -34,21 +41,11 @@ public class Prueba : MonoBehaviour
         // Obtén el nombre del micrófono integrado de Oculus
         microphoneName = Microphone.devices[0];  // Normalmente el primer dispositivo es el micrófono de Oculus
         sampleRate = AudioSettings.outputSampleRate;
+
+        StartRecording();
     }
     void Update()
     {
-        // Inicia o detén la grabación al presionar la tecla R
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            if (isRecording)
-            {
-                StopRecording();
-            }
-            else
-            {
-                StartRecording();
-            }
-        }
         // Verifica si está grabando y calcula la amplitud
         if (isRecording && audioClip != null)
         {
@@ -64,6 +61,37 @@ public class Prueba : MonoBehaviour
                 audioClip.GetData(samples, lastSamplePos);
                 recordedSamples.AddRange(samples);
                 lastSamplePos = currentPosition % audioClip.samples;
+
+                currentAmplitude = CalculateAmplitude(samples);
+
+                if (currentAmplitude > amplitudeThreshold)
+                {
+                    continuousSpeechDuration += Time.deltaTime;
+                    if (continuousSpeechDuration >= continuousSpeechThreshold)
+                    {
+                        Debug.Log("5 segundos de audio detectados. Enviando audio...");
+                        SaveAudioClip();
+                        recordedSamples.Clear();
+                        continuousSpeechDuration = 0f; // Reset timer
+                    }
+                    else
+                    {
+                        Debug.Log("Detectando audio...");
+                        isMonitoringSilence = true;
+                        silenceDuration = 0f;
+                    }
+                }
+                else if (isMonitoringSilence)
+                {
+                    silenceDuration += Time.deltaTime;
+                    if (silenceDuration >= silenceThreshold)
+                    {
+                        Debug.Log("Silencio detectado. Guardando audio...");
+                        SaveAudioClip();
+                        recordedSamples.Clear();
+                        isMonitoringSilence = false;
+                    }
+                }
             }
         }
     }
