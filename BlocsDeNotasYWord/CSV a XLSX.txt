@@ -1,2 +1,0 @@
-CSV A EXCELL
-Datos > Texto en columnas > Delimitados, Siguiente > Coma, Siguiente > Finalizar
