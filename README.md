@@ -1,4 +1,4 @@
-# Proyecto X
+# APIEmociones
 
 Este proyecto requiere Python y algunas dependencias adicionales. Para facilitar la instalación, todo lo que necesitas hacer es ejecutar un archivo `.bat` que se encargará de todo el proceso.
 
